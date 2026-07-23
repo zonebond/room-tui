@@ -4777,6 +4777,11 @@ class ShellScreen(Screen):
         p = (self._activity_phase or "").lower()
         if p == "cancel":
             return "Cancelling..."
+        # Chat submit → first response: preflight probes + request in flight
+        # (Grok "Waiting for response…" — before _chat_busy is even set).
+        # NB: bare "waiting" is the doc-gen pipeline's phase → "Working...".
+        if p == "waiting-response":
+            return "Waiting for response..."
         # Agent turn → Thinking... (matches Grok status strip in screenshot)
         if self._chat_busy or self._is_agent_block_live():
             return "Thinking..."
@@ -6412,6 +6417,28 @@ class ShellScreen(Screen):
         self._model_issue = st.reason
         self._paint_footer()
 
+    async def _refresh_model_status_async(self) -> None:
+        """Same gate as ``_refresh_model_status`` but off the event loop.
+
+        ``check_model_status`` may spawn ``pi --list-models`` — blocking the
+        loop with that freezes every frame (spinner included) after submit.
+        """
+        import asyncio
+
+        from room_tui.pi_catalog import check_model_status
+
+        app: "RoomApp" = self.app  # type: ignore[assignment]
+        st = await asyncio.to_thread(
+            lambda: check_model_status(
+                app.cfg.provider,
+                app.cfg.model,
+                pi_bin=app.cfg.pi_bin,
+            )
+        )
+        self._model_ok = st.ok
+        self._model_issue = st.reason
+        self._paint_footer()
+
     def action_model_setup(self) -> None:
         """Ctrl+M — 连接模型（配置服务商 / 密钥 / 本机）。"""
         self._open_model_setup()
@@ -7270,6 +7297,14 @@ class ShellScreen(Screen):
             self._turn_system("正在初始化，请稍候…", persist=False)
             return
 
+        # Show life immediately (Grok "Waiting for response… · Ns"): the
+        # preflight below spawns subprocesses (engine version, pi
+        # --list-models) that take seconds on Windows — without this the UI
+        # sat dead between the pinned prompt and the first Thinking… row.
+        self._set_activity(
+            "Waiting for response...", phase="waiting-response", reset_timer=True
+        )
+
         # Re-probe every send so TUI matches a green `room doctor` (no stale _ready)
         try:
             ready, env_err = await app.probe_environment()
@@ -7283,6 +7318,7 @@ class ShellScreen(Screen):
             err=env_err if not self._ready else "",
         )
         if not self._ready:
+            self._clear_activity()
             reason = (env_err or self._env_err or "环境未就绪").strip()
             self._append_notice_block(
                 f"无法对话 · {reason}",
@@ -7293,8 +7329,11 @@ class ShellScreen(Screen):
             return
 
         # Gate: model must be set and known to active pi (avoids Unknown provider).
-        self._refresh_model_status(announce=False)
+        # Off-loop: check_model_status may spawn ``pi --list-models`` (seconds
+        # on Windows) — inline it froze the whole UI right after submit.
+        await self._refresh_model_status_async()
         if not self._model_ok:
+            self._clear_activity()
             self._turn_system(
                 f"无法发送：{self._model_issue or '模型未配置'}",
                 error=True,
@@ -7327,9 +7366,11 @@ class ShellScreen(Screen):
         self._thinking_gap_above = False
         if not self._footer_hint:
             self._paint_footer()
-        # Grok turn: open Thinking… block (streams body as deltas arrive)
-        self._set_activity("Thinking...", phase="thinking", reset_timer=True)
-        self._open_thinking_live_row()
+        # Keep "Waiting for response… · Ns" until the model actually replies —
+        # the first thinking/answer/tool event flips the phase and opens its
+        # own live row (``_agent_on_thinking_delta`` → ``_open_thinking_live_row``).
+        # Opening a Thinking… card here would claim thinking before any token
+        # arrived (and flash-remove it for answers with no thinking).
         try:
             from room_tui.llm.sanitize import looks_like_tool_dump, sanitize_model_text
 
