@@ -1218,6 +1218,9 @@ class ShellScreen(Screen):
         """
         if not self._user_pin_active and self._scroll_pad_count <= 0:
             return
+        was_pinned = self._user_pin_active
+        pin = int(self._user_pin_start)
+        follow = bool(self._user_pin_follow)
         if not keep_pad:
             self._clear_scroll_pad()
         # keep_pad=True: leave trailing blank rows so the turn stays top-aligned.
@@ -1231,6 +1234,28 @@ class ShellScreen(Screen):
             log.auto_scroll = False
         except Exception:
             pass
+        if keep_pad and was_pinned:
+            # Ending the turn collapses the 1-row activity strip, growing the
+            # log viewport — the pad written during the turn is now one row
+            # short and the view would clamp one line off the pinned prompt.
+            # Re-pad (and re-align while still following) after layout settles.
+            def _final_align() -> None:
+                if self._user_pin_active:
+                    return  # a new turn re-pinned meanwhile — leave it alone
+                self._user_pin_active = True
+                self._user_pin_start = pin
+                try:
+                    self._apply_scroll_pad()
+                    if follow:
+                        self._scroll_line_to_top(int(self._pin_follow_scroll_y()))
+                finally:
+                    self._user_pin_active = False
+                    self._user_pin_start = 0
+
+            try:
+                self.call_after_refresh(_final_align)
+            except Exception:
+                _final_align()
         self._update_sticky_user_prompt()
 
     def _register_user_section(
@@ -7423,8 +7448,11 @@ class ShellScreen(Screen):
             self._chat_busy = False
             self._chat_cancel = None
             self._clear_activity()
-            # Release Grok top-pin so the finished turn can be reviewed at bottom.
-            self._end_user_pin()
+            # NB: the top-pin stays active through the final polished render
+            # below — releasing it first made those writes auto-scroll to the
+            # bottom and drop the pad, yanking the viewport off the pinned
+            # prompt the moment a short turn finished. The ``finally`` block
+            # releases the pin (keeping the pad) after rendering.
             if result.ok:
                 if result.provider:
                     app.orch.state.provider = result.provider
@@ -7489,7 +7517,6 @@ class ShellScreen(Screen):
             self._chat_busy = False
             self._chat_cancel = None
             self._clear_activity()
-            self._end_user_pin()
             self._write(
                 f"[{COLOR_ERR}]✗[/{COLOR_ERR}]  "
                 f"[{COLOR_ERR}]{str(e)[:80]}[/{COLOR_ERR}]"
