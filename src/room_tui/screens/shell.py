@@ -1019,6 +1019,48 @@ class ShellScreen(Screen):
         )
         self._scroll_pad_count = need
 
+    def _trim_scroll_pad_above(self, y: float) -> None:
+        """Ratchet: browsing upward eats trailing pad blanks, one-way.
+
+        After a short turn the pad keeps the answer top-aligned. Once the
+        user scrolls up, the pad rows that fell below the viewport bottom are
+        deleted so scrolling back down stops at real content — the blank is
+        never replenished and disappears entirely after enough upward travel.
+        """
+        if self._user_pin_active or self._scroll_pad_count <= 0:
+            return
+        try:
+            log = self.query_one("#msg-log", SmoothRichLog)
+        except Exception:
+            return
+        n = len(log.lines)
+        vh = self._msg_viewport_height()
+        # Rows past the (target) viewport bottom — only ever pad blanks here.
+        excess = n - (int(y) + vh)
+        k = min(int(self._scroll_pad_count), max(0, int(excess)))
+        if k <= 0:
+            return
+        del log.lines[n - k :]
+        self._scroll_pad_count -= k
+        try:
+            log._line_cache.clear()
+        except Exception:
+            pass
+        try:
+            log.virtual_size = Size(
+                getattr(log, "_widest_line_width", 0) or 0,
+                len(log.lines),
+            )
+        except Exception:
+            pass
+        # Clamp any in-flight coast target into the shrunken range.
+        try:
+            max_y = float(log.max_scroll_y)
+            if float(log.scroll_target_y) > max_y:
+                log.scroll_target_y = max_y
+        except Exception:
+            pass
+
     def _scroll_line_to_top(self, line_index: int) -> None:
         """Scroll #msg-log so ``line_index`` is at the top of the viewport."""
         try:
@@ -1067,7 +1109,12 @@ class ShellScreen(Screen):
         """Wheel/trackpad: sticky header + Grok follow engage/disengage."""
         # Contacts-style sticky user prompt while browsing any turn.
         self._update_sticky_user_prompt(y)
-        if self._pin_scroll_guard or not self._user_pin_active:
+        if self._pin_scroll_guard:
+            return
+        if not self._user_pin_active:
+            # Finished turn: scrolling up consumes the top-align pad one-way
+            # (never re-added on the way down) until the blank is gone.
+            self._trim_scroll_pad_above(y)
             return
         pin = float(self._user_pin_start)
         # Scrolled above the pinned user line → free browse.
@@ -1242,6 +1289,17 @@ class ShellScreen(Screen):
             def _final_align() -> None:
                 if self._user_pin_active:
                     return  # a new turn re-pinned meanwhile — leave it alone
+                if follow:
+                    # User scrolled away in the release window → their view
+                    # wins (and the pad ratchet may already be consuming).
+                    try:
+                        log = self.query_one("#msg-log", SmoothRichLog)
+                        if abs(float(log.scroll_y) - float(pin)) > 2.0 and abs(
+                            float(log.scroll_y) - self._follow_max_scroll_y()
+                        ) > 2.0:
+                            return
+                    except Exception:
+                        pass
                 self._user_pin_active = True
                 self._user_pin_start = pin
                 try:
