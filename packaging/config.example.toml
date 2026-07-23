@@ -1,0 +1,15 @@
+# Room 产品配置样例
+# 安装器可在首次安装时复制到 ~/.config/room-tui/config.toml（若尚不存在）
+# 也可手动：mkdir -p ~/.config/room-tui && cp config.example.toml ~/.config/room-tui/config.toml
+
+[pi]
+# LLM Worker（本机 pi）的默认 provider / model — 按你的 pi 配置修改
+provider = "bailian"
+model = "qwen3.6-35b-a3b"
+thinking = "off"
+# Agent 对话思考强度：off / minimal / low / medium / high / xhigh / max
+agent_thinking = "high"
+
+# 引擎二进制一般无需配置：套件安装后 room 与 paper-derived 同目录自动解析
+# [engine]
+# bin = "/absolute/path/to/paper-derived"

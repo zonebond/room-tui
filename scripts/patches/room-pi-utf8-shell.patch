@@ -1,0 +1,231 @@
+diff --git a/packages/coding-agent/src/core/bash-executor.ts b/packages/coding-agent/src/core/bash-executor.ts
+index bacb2ecc..d6f13f69 100644
+--- a/packages/coding-agent/src/core/bash-executor.ts
++++ b/packages/coding-agent/src/core/bash-executor.ts
+@@ -11,7 +11,7 @@ import { createWriteStream, type WriteStream } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { stripAnsi } from "../utils/ansi.ts";
+-import { sanitizeBinaryOutput } from "../utils/shell.ts";
++import { decodeShellBytes, sanitizeBinaryOutput } from "../utils/shell.ts";
+ import type { BashOperations } from "./tools/bash.ts";
+ import { DEFAULT_MAX_BYTES, truncateTail } from "./tools/truncate.ts";
+ 
+@@ -73,13 +73,15 @@ export async function executeBashWithOperations(
+ 		}
+ 	};
+ 
+-	const decoder = new TextDecoder();
++	// Keep raw bytes so Windows CP936/GBK tool output can be re-decoded correctly
++	const rawChunks: Buffer[] = [];
+ 
+ 	const onData = (data: Buffer) => {
+ 		totalBytes += data.length;
++		rawChunks.push(Buffer.from(data));
+ 
+-		// Sanitize: strip ANSI, replace binary garbage, normalize newlines
+-		const text = sanitizeBinaryOutput(stripAnsi(decoder.decode(data, { stream: true }))).replace(/\r/g, "");
++		// Provisional decode for streaming UI (final result uses full-buffer decode)
++		const text = sanitizeBinaryOutput(stripAnsi(decodeShellBytes(data))).replace(/\r/g, "");
+ 
+ 		// Start writing to temp file if exceeds threshold
+ 		if (totalBytes > DEFAULT_MAX_BYTES) {
+@@ -110,7 +112,9 @@ export async function executeBashWithOperations(
+ 			signal: options?.signal,
+ 		});
+ 
+-		const fullOutput = outputChunks.join("");
++		// Final decode from full raw buffer (corrects Windows PowerShell CP936)
++		const fullRaw = Buffer.concat(rawChunks);
++		const fullOutput = sanitizeBinaryOutput(stripAnsi(decodeShellBytes(fullRaw))).replace(/\r/g, "");
+ 		const truncationResult = truncateTail(fullOutput);
+ 		if (truncationResult.truncated) {
+ 			ensureTempFile();
+@@ -130,7 +134,8 @@ export async function executeBashWithOperations(
+ 	} catch (err) {
+ 		// Check if it was an abort
+ 		if (options?.signal?.aborted) {
+-			const fullOutput = outputChunks.join("");
++			const fullRaw = Buffer.concat(rawChunks);
++			const fullOutput = sanitizeBinaryOutput(stripAnsi(decodeShellBytes(fullRaw))).replace(/\r/g, "");
+ 			const truncationResult = truncateTail(fullOutput);
+ 			if (truncationResult.truncated) {
+ 				ensureTempFile();
+diff --git a/packages/coding-agent/src/core/tools/bash.ts b/packages/coding-agent/src/core/tools/bash.ts
+index b0bd5022..3b16603b 100644
+--- a/packages/coding-agent/src/core/tools/bash.ts
++++ b/packages/coding-agent/src/core/tools/bash.ts
+@@ -12,6 +12,7 @@ import {
+ 	getShellConfig,
+ 	getShellEnv,
+ 	killProcessTree,
++	rewriteCommandForWindowsUtf8,
+ 	trackDetachedChildPid,
+ 	untrackDetachedChildPid,
+ } from "../../utils/shell.ts";
+@@ -94,16 +95,40 @@ export function createLocalBashOperations(options?: { shellPath?: string }): Bas
+ 			}
+ 
+ 			const commandFromStdin = shellConfig.commandTransport === "stdin";
+-			const child = spawn(shellConfig.shell, commandFromStdin ? shellConfig.args : [...shellConfig.args, command], {
+-				cwd,
+-				detached: process.platform !== "win32",
+-				env: env ?? getShellEnv(),
+-				stdio: [commandFromStdin ? "pipe" : "ignore", "pipe", "pipe"],
+-				windowsHide: true,
+-			});
++			// Cross-platform UTF-8-friendly env for tool children (macOS / Win10 / Win11 / Linux)
++			const baseEnv = { ...(env ?? getShellEnv()) };
++			baseEnv.PYTHONUTF8 = baseEnv.PYTHONUTF8 ?? "1";
++			baseEnv.PYTHONIOENCODING = baseEnv.PYTHONIOENCODING ?? "utf-8";
++			if (process.platform === "darwin") {
++				// macOS always ships en_US.UTF-8; C.UTF-8 is not universal on older macOS
++				baseEnv.LANG = baseEnv.LANG || "en_US.UTF-8";
++				baseEnv.LC_ALL = baseEnv.LC_ALL || "en_US.UTF-8";
++				baseEnv.LC_CTYPE = baseEnv.LC_CTYPE || "en_US.UTF-8";
++			} else if (process.platform === "win32") {
++				// Git Bash / MSYS + nested PS; C.UTF-8 is understood by most MSYS builds
++				baseEnv.LANG = baseEnv.LANG ?? "C.UTF-8";
++				baseEnv.LC_ALL = baseEnv.LC_ALL ?? "C.UTF-8";
++				baseEnv.ROOM_FORCE_UTF8 = baseEnv.ROOM_FORCE_UTF8 ?? "1";
++			} else {
++				baseEnv.LANG = baseEnv.LANG ?? "C.UTF-8";
++				baseEnv.LC_ALL = baseEnv.LC_ALL ?? "C.UTF-8";
++			}
++			// Win only: rewrite nested powershell/pwsh -Command to force UTF-8 pipe output
++			const runCommand = rewriteCommandForWindowsUtf8(command);
++			const child = spawn(
++				shellConfig.shell,
++				commandFromStdin ? shellConfig.args : [...shellConfig.args, runCommand],
++				{
++					cwd,
++					detached: process.platform !== "win32",
++					env: baseEnv,
++					stdio: [commandFromStdin ? "pipe" : "ignore", "pipe", "pipe"],
++					windowsHide: true,
++				},
++			);
+ 			if (commandFromStdin) {
+ 				child.stdin?.on("error", () => {});
+-				child.stdin?.end(command);
++				child.stdin?.end(runCommand);
+ 			}
+ 			if (child.pid) trackDetachedChildPid(child.pid);
+ 			let timedOut = false;
+diff --git a/packages/coding-agent/src/utils/shell.ts b/packages/coding-agent/src/utils/shell.ts
+index 2cafa595..74664f8d 100644
+--- a/packages/coding-agent/src/utils/shell.ts
++++ b/packages/coding-agent/src/utils/shell.ts
+@@ -133,6 +133,112 @@ export function getShellEnv(): NodeJS.ProcessEnv {
+ 	};
+ }
+ 
++/**
++ * Cross-platform shell stdout/stderr decoding (Room agent tools).
++ *
++ * | Platform | Contract |
++ * |----------|----------|
++ * | macOS / Linux | UTF-8 only (native for bash/zsh/curl) |
++ * | Windows 10/11 | Prefer UTF-8; if mojibake, pick best among
++ *   common system ACPs (zh-CN CP936/GBK, Western 1252, JA/KR/TW, …).
++ *   Covers Win10 legacy ACP, Win11 optional UTF-8 beta, PS 5.1 + pwsh. |
++ */
++function decodeScore(text: string): number {
++	const bad = (text.match(/\uFFFD/g) || []).length;
++	// Fewer replacements = better; slight penalty for C1 controls (bad decode)
++	const ctrl = (text.match(/[\u0080-\u009F]/g) || []).length;
++	return -(bad * 1000 + ctrl);
++}
++
++export function decodeShellBytes(data: Buffer | Uint8Array): string {
++	const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
++	if (buf.length === 0) {
++		return "";
++	}
++	const utf8 = buf.toString("utf8");
++	// macOS / Linux: tools and shells speak UTF-8
++	if (process.platform !== "win32") {
++		return utf8;
++	}
++	// Clean UTF-8 (curl, Node, Win11 UTF-8 system locale, pwsh often)
++	if (!(utf8.includes("\uFFFD"))) {
++		return utf8;
++	}
++	// Windows 10/11 mixed code pages — choose least-broken decode
++	const encodings = [
++		"utf-8",
++		"gb18030",
++		"gbk",
++		"windows-1252",
++		"shift_jis",
++		"big5",
++		"euc-kr",
++		"windows-1251",
++	] as const;
++	let best = utf8;
++	let bestScore = decodeScore(utf8);
++	for (const enc of encodings) {
++		if (enc === "utf-8") continue;
++		try {
++			const s = new TextDecoder(enc).decode(buf);
++			const sc = decodeScore(s);
++			if (sc > bestScore) {
++				best = s;
++				bestScore = sc;
++			}
++		} catch {
++			// encoding may be unavailable in minimal ICU builds
++		}
++	}
++	return best;
++}
++
++const PS_UTF8_PREAMBLE =
++	"[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); " +
++	"$OutputEncoding = [Console]::OutputEncoding; ";
++
++/**
++ * Force Windows PowerShell / pwsh -Command bodies to emit UTF-8 on the pipe.
++ * No-op on macOS/Linux and for non-PowerShell commands.
++ *
++ * Win10: Windows PowerShell 5.1 defaults to system ACP (often CP936).
++ * Win11: may be UTF-8 system-wide or still ACP; rewrite is safe either way.
++ */
++export function rewriteCommandForWindowsUtf8(command: string): string {
++	if (process.platform !== "win32") {
++		return command;
++	}
++	// powershell.exe (5.1) and pwsh.exe (Core 7+)
++	if (!/\b(?:powershell|pwsh)(?:\.exe)?\b/i.test(command)) {
++		return command;
++	}
++	if (/OutputEncoding/i.test(command) || /UTF8Encoding/i.test(command)) {
++		return command;
++	}
++	const re =
++		/(\b(?:powershell|pwsh)(?:\.exe)?\b)((?:\s+-[A-Za-z][A-Za-z0-9_]*(?:\s+"[^"]*"|\s+'[^']*'|\s+[^\s-]+)*)*?)\s+(-Command|-c)\s+(")([\s\S]*)(")\s*$/i;
++	const m = command.match(re);
++	if (!m) {
++		const re2 =
++			/(\b(?:powershell|pwsh)(?:\.exe)?\b)((?:\s+-[A-Za-z][A-Za-z0-9_]*(?:\s+"[^"]*"|\s+'[^']*'|\s+[^\s-]+)*)*?)\s+(-Command|-c)\s+(')([\s\S]*)(')\s*$/i;
++		const m2 = command.match(re2);
++		if (!m2) {
++			return command;
++		}
++		const body = m2[5];
++		const flags = m2[2] || "";
++		const hasNoProfile = /(?:^|\s)-NoProfile(?:\s|$)/i.test(flags);
++		const np = hasNoProfile ? "" : " -NoProfile";
++		return `${m2[1]}${flags}${np} ${m2[3]} '${PS_UTF8_PREAMBLE}${body}'`;
++	}
++	const body = m[5];
++	const flags = m[2] || "";
++	const hasNoProfile = /(?:^|\s)-NoProfile(?:\s|$)/i.test(flags);
++	const np = hasNoProfile ? "" : " -NoProfile";
++	const escaped = PS_UTF8_PREAMBLE + body.replace(/"/g, '`"');
++	return `${m[1]}${flags}${np} ${m[3]} "${escaped}"`;
++}
++
+ /**
+  * Sanitize binary output for display/storage.
+  * Removes characters that crash string-width or cause display issues:

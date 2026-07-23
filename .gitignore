@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+.pd/
+*.md.bak
+.DS_Store
+# LibreOffice portable tree (~300MB+); fetch via scripts/fetch-libreoffice-windows.ps1
+vendor/libreoffice-windows/
+vendor/_lo-work/
+
+# portable toolchains (fetched, not committed)
+vendor/c-toolchain*
+vendor/libreoffice*

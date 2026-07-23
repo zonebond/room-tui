@@ -1,0 +1,5 @@
+# Room product required skills (one name per line).
+# Suite packagers copy these into suite/skills/<name>/;
+# installers place them where Room Agent discovers skills.
+paper-derived
+oob-divzero
