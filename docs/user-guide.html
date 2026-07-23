@@ -3,28 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Room 使用手册 · V1.1</title>
+  <title>Room 使用手册 · V1.5</title>
   <meta name="description" content="Room 本地智能工程助手 · 使用手册（操作说明）" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f6f4ef;
+      /* Neutral cool grays — stable on budget / uncalibrated displays */
+      --bg: #f3f4f6;
       --bg-elev: #ffffff;
-      --bg-soft: #efece4;
-      --bg-code: #1e2430;
-      --line: rgba(28, 36, 48, 0.10);
-      --line-strong: rgba(28, 36, 48, 0.16);
-      --ink: #1c2430;
-      --ink-dim: #4a5564;
-      --ink-mute: #7a8494;
-      --accent: #2f5d8c;
-      --accent-deep: #234a70;
-      --accent-dim: rgba(47, 93, 140, 0.09);
-      --accent-glow: rgba(47, 93, 140, 0.06);
-      --warm: #9a5b2f;
-      --warm-dim: rgba(154, 91, 47, 0.10);
+      --bg-soft: #e8eaee;
+      --bg-code: #1f2937;
+      --line: rgba(15, 23, 42, 0.10);
+      --line-strong: rgba(15, 23, 42, 0.16);
+      --ink: #0f172a;
+      --ink-dim: #475569;
+      --ink-mute: #64748b;
+      --accent: #2563eb;
+      --accent-deep: #1d4ed8;
+      --accent-dim: rgba(37, 99, 235, 0.08);
+      --accent-glow: rgba(37, 99, 235, 0.05);
+      /* Suite mark: same cool family, slightly deeper slate (no warm cast) */
+      --suite: #334155;
+      --suite-dim: rgba(51, 65, 85, 0.08);
+      --suite-line: rgba(51, 65, 85, 0.28);
+      --warm: var(--suite);
+      --warm-dim: var(--suite-dim);
       --radius: 10px;
       --radius-sm: 7px;
       --max: 720px;
@@ -32,7 +37,7 @@
       --font-display: "Instrument Serif", "Songti SC", "Noto Serif SC", serif;
       --font-body: "DM Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       --font-mono: "IBM Plex Mono", "SF Mono", "Menlo", "Consolas", monospace;
-      --shadow: 0 12px 40px rgba(28, 36, 48, 0.07);
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -44,10 +49,8 @@
       font-family: var(--font-body);
       font-size: 16px;
       line-height: 1.65;
-      background:
-        radial-gradient(900px 480px at 8% -8%, var(--accent-glow), transparent 55%),
-        radial-gradient(700px 360px at 100% 0%, rgba(154, 91, 47, 0.04), transparent 50%),
-        var(--bg);
+      /* Flat neutral fill — no warm wash / multi-hue gradients */
+      background: var(--bg);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
@@ -60,7 +63,7 @@
     }
     a:hover {
       color: var(--accent-deep);
-      border-bottom-color: rgba(47, 93, 140, 0.35);
+      border-bottom-color: rgba(37, 99, 235, 0.35);
     }
 
     .shell {
@@ -426,14 +429,14 @@
     }
     .ui-mock .pane + .pane {
       border-left: 1px solid var(--line);
-      background: rgba(47, 93, 140, 0.04);
+      background: rgba(37, 99, 235, 0.04);
       color: var(--ink-mute);
     }
     .ui-mock .input {
       border-top: 1px solid var(--line);
       padding: 10px 14px;
       color: var(--ink-mute);
-      background: #fbfaf7;
+      background: #f8fafc;
     }
     .ui-mock .status {
       border-top: 1px solid var(--line);
@@ -572,6 +575,120 @@
       .ui-mock .body { grid-template-columns: 1fr; }
       .ui-mock .pane + .pane { border-left: none; border-top: 1px solid var(--line); }
     }
+
+    /* Feature highlight cards */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 18px 0 8px;
+    }
+    .feat-card {
+      padding: 16px 16px 14px;
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 0 rgba(28, 36, 48, 0.03);
+    }
+    .feat-card h3 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .feat-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--ink-dim);
+      line-height: 1.55;
+    }
+    .feat-card .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    /* Suite row: same 2-col grid, last pair slightly marked as kit capability */
+    .feat-card.suite {
+      background: #f8fafc;
+      border-color: rgba(51, 65, 85, 0.14);
+      box-shadow:
+        inset 3px 0 0 0 var(--suite-line),
+        0 1px 0 rgba(15, 23, 42, 0.03);
+    }
+    .feat-card.suite .tag {
+      color: var(--suite);
+    }
+    .feat-card.suite .suite-mark {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 6px;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--suite);
+      background: var(--suite-dim);
+      border-radius: 3px;
+      vertical-align: 0.1em;
+    }
+    .example-block {
+      margin: 16px 0 22px;
+      padding: 16px 18px;
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .example-block h4 {
+      margin: 0 0 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .example-block p.hint {
+      margin: 0 0 10px;
+      font-size: 0.88rem;
+      color: var(--ink-mute);
+    }
+    .example-block pre { margin-bottom: 0; }
+    .minute-path {
+      display: grid;
+      gap: 0;
+      margin: 16px 0 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-elev);
+      box-shadow: var(--shadow);
+    }
+    .minute-row {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      align-items: start;
+    }
+    .minute-row:last-child { border-bottom: none; }
+    .minute-row .n {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent);
+      padding-top: 2px;
+    }
+    .minute-row .t {
+      font-size: 0.92rem;
+      color: var(--ink-dim);
+    }
+    .minute-row .t strong { color: var(--ink); }
+    @media (max-width: 720px) {
+      .feat-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -581,20 +698,21 @@
         <span class="mark" aria-hidden="true"></span>
         <strong>Room</strong>
       </div>
-      <p class="nav-meta">使用手册 · V1.1</p>
-
+      <p class="nav-meta">使用手册 · V1.5</p>
       <h2>正文</h2>
       <ol>
         <li><a href="#foreword">前言</a></li>
+        <li><a href="#features">产品特色</a></li>
+        <li><a href="#examples">示例集</a></li>
         <li><a href="#ch1">1. 开始使用</a></li>
         <li><a href="#ch2">2. 认识界面</a></li>
         <li><a href="#ch3">3. 日常操作</a></li>
-        <li class="sub"><a href="#ch3-1">· 对话</a></li>
-        <li class="sub"><a href="#ch3-2">· 生成文档</a></li>
-        <li><a href="#ch4">4. 常见情况</a></li>
-        <li><a href="#ch5">5. 获取支持</a></li>
+        <li><a href="#ch4">4. Room 套件</a></li>
+        <li class="sub"><a href="#ch4-1">· paper-derived</a></li>
+        <li class="sub"><a href="#ch4-2">· oob-divzero</a></li>
+        <li><a href="#ch5">5. 常见情况</a></li>
+        <li><a href="#ch6">6. 获取支持</a></li>
       </ol>
-
       <h2>附录</h2>
       <ul>
         <li><a href="#app-a">A. 命令速查</a></li>
@@ -603,11 +721,7 @@
         <li><a href="#app-d">D. 一页小抄</a></li>
         <li><a href="#app-e">E. 修订记录</a></li>
       </ul>
-
-      <div class="nav-foot">
-        操作说明 · 不含安装部署<br />
-        适用 Room 0.1.x
-      </div>
+      <div class="nav-foot">操作说明 · 不含安装部署<br />适用 Room 0.1.x</div>
     </aside>
 
     <main class="main">
@@ -615,222 +729,184 @@
         <header class="cover">
           <div class="cover-kicker">Product Handbook</div>
           <h1>Room <em>使用手册</em></h1>
-          <p class="cover-lead">
-            本地智能工程助手的操作说明：如何连接模型、在项目中对话、按模板生成技术文档，以及遇到情况时如何自助处理。
-          </p>
+          <p class="cover-lead">本地智能工程助手的操作说明：特色与示例、日常对话，以及 Room 套件中的文档派生与 C 代码扫描。</p>
           <dl class="meta-grid">
             <div class="meta-cell"><dt>产品名称</dt><dd>Room · 本地智能工程助手</dd></div>
             <div class="meta-cell"><dt>文档类型</dt><dd>使用手册（操作说明）</dd></div>
             <div class="meta-cell"><dt>适用版本</dt><dd>Room 0.1.x</dd></div>
-            <div class="meta-cell"><dt>文档版本</dt><dd>V1.1</dd></div>
+            <div class="meta-cell"><dt>文档版本</dt><dd>V1.5</dd></div>
             <div class="meta-cell"><dt>读者</dt><dd>终端用户 / 项目使用方</dd></div>
             <div class="meta-cell"><dt>说明范围</dt><dd>日常操作与排障（不含安装）</dd></div>
           </dl>
-          <p class="note" style="margin-top:24px">
-            本手册随软件版本更新。界面文案、菜单项以您<strong>当前安装的 Room</strong> 为准。
-          </p>
+          <p class="note" style="margin-top:24px">界面文案以您<strong>当前安装的 Room</strong> 为准。</p>
         </header>
 
         <section id="foreword">
           <span class="chapter-label">Foreword</span>
           <h2>前言</h2>
-
           <h3>这份手册是什么</h3>
-          <p>
-            Room 装在您的电脑上，围绕<strong>当前打开的项目目录</strong>工作。配置好模型后，您可以：
-          </p>
+          <p>Room 装在您的电脑上，围绕<strong>当前打开的项目目录</strong>工作。配置好模型后，您可以：</p>
           <ul>
             <li>用自然语言完成开发相关问答与辅助操作</li>
             <li>按样例模板派生结构化技术文档</li>
             <li>在界面中查看任务进度与文档大纲</li>
           </ul>
           <p>密钥与连接配置保存在本机用户目录，<strong>不会</strong>写入项目源码。</p>
-
           <h3>阅读建议</h3>
           <div class="path-cards">
-            <div class="path-card">
-              <div class="when">第一次用</div>
-              <div class="go"><a href="#ch1">第 1 章 开始使用</a> → <a href="#ch2">第 2 章 认识界面</a></div>
-            </div>
-            <div class="path-card">
-              <div class="when">要聊天 / 查代码</div>
-              <div class="go"><a href="#ch3-1">第 3 章 · 对话</a></div>
-            </div>
-            <div class="path-card">
-              <div class="when">要写技术文档</div>
-              <div class="go"><a href="#ch3-2">第 3 章 · 生成文档</a></div>
-            </div>
-            <div class="path-card">
-              <div class="when">命令与快捷键</div>
-              <div class="go"><a href="#app-a">附录 A</a> / <a href="#app-b">附录 B</a></div>
-            </div>
-            <div class="path-card">
-              <div class="when">出了问题</div>
-              <div class="go"><a href="#ch4">第 4 章</a> → <a href="#app-c">附录 C 环境自检</a></div>
-            </div>
+            <div class="path-card"><div class="when">第一次用</div><div class="go"><a href="#features">特色</a> → <a href="#ch1">第 1 章</a></div></div>
+            <div class="path-card"><div class="when">聊天 / 查代码</div><div class="go"><a href="#ch3">第 3 章</a> · <a href="#examples">示例集</a></div></div>
+            <div class="path-card"><div class="when">写文档 / 扫 C</div><div class="go"><a href="#ch4">第 4 章 Room 套件</a></div></div>
+            <div class="path-card"><div class="when">出了问题</div><div class="go"><a href="#ch5">第 5 章</a> · <a href="#app-c">附录 C</a></div></div>
           </div>
-
           <h3>本手册不包含</h3>
-          <p>
-            安装包获取、系统安装步骤、服务器部署与二次开发说明。
-            相关内容请参阅安装包附带说明，或联系产品对接人。
-          </p>
+          <p>安装包获取、系统安装、服务器部署与二次开发。请参阅安装包说明或联系对接人。</p>
+        </section>
+
+        <section id="features">
+          <span class="chapter-label">Highlights</span>
+          <h2>产品特色一览</h2>
+          <p>Room 是<strong>嵌在项目目录里的工程助手</strong>，日常最能感知的差异：</p>
+          <div class="feat-grid" aria-label="六项特色 · 双列；末行两项为 Room 套件">
+            <article class="feat-card"><span class="tag">Local</span><h3>本地 · 以项目为中心</h3><p>在哪个文件夹启动，就围绕哪个项目；密钥在本机用户目录。</p></article>
+            <article class="feat-card"><span class="tag">Layout</span><h3>发送即开新一页</h3><p>问题顶到对话区上方，回复从下面展开。</p></article>
+            <article class="feat-card"><span class="tag">Scroll</span><h3>长回复自动跟读</h3><p>跟着最新输出走；上翻历史不会被强拽。</p></article>
+            <article class="feat-card"><span class="tag">Queue</span><h3>忙时消息排队</h3><p>上一轮未结束再发送也不会丢。</p></article>
+            <article class="feat-card suite">
+              <span class="tag">paper-derived</span><span class="suite-mark">套件</span>
+              <h3>模板派生文档</h3>
+              <p>样例 → <code>/new</code>；中断后 <code>/continue</code>。详见 <a href="#ch4-1-2">4.1.2</a>。</p>
+            </article>
+            <article class="feat-card suite">
+              <span class="tag">oob-divzero</span><span class="suite-mark">套件</span>
+              <h3>C 越界 / 除零扫描</h3>
+              <p>召回 → AI 判定 → 可选验证。详见 <a href="#ch4-2">4.2</a>。</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="examples">
+          <span class="chapter-label">Try this</span>
+          <h2>示例集 · 可以直接照着试</h2>
+          <p class="note">下列句子可直接粘贴（请先 <code>cd</code> 到项目再 <code>room</code>）。文档与扫描完整流程见 <a href="#ch4">第 4 章</a>。</p>
+          <div class="example-block"><h4>摸清项目</h4>
+            <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+            <pre><code>用三五句话介绍当前项目：它是做什么的、主要目录有哪些、我该先从哪看起？</code></pre>
+          </div>
+          <div class="example-block"><h4>对着报错问</h4>
+            <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+            <pre><code>我刚遇到这段报错，请用通俗话解释原因，并给出 2～3 个最可能的排查步骤：
+
+（此处粘贴报错全文）</code></pre>
+          </div>
+          <div class="example-block"><h4>对着具体文件问</h4>
+            <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+            <pre><code>请阅读 src/ 下与启动入口相关的文件，说明程序是怎么启动的，用条目列出关键函数。</code></pre>
+          </div>
+          <div class="example-block"><h4>改之前先问清楚</h4>
+            <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+            <pre><code>如果要给 README 增加「快速开始」一节，你会改哪些文件？先列计划，不要直接改文件。</code></pre>
+          </div>
+          <h3>五分钟体验路径</h3>
+          <div class="minute-path">
+            <div class="minute-row"><div class="n">01</div><div class="t"><code>cd 项目路径</code> → <code>room</code></div></div>
+            <div class="minute-row"><div class="n">02</div><div class="t">配模型：<code>room setup</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></div></div>
+            <div class="minute-row"><div class="n">03</div><div class="t">发「摸清项目」，观察问题顶上、回复展开</div></div>
+            <div class="minute-row"><div class="n">04</div><div class="t">长回复时上滚再回来——应不会乱跳</div></div>
+            <div class="minute-row"><div class="n">05</div><div class="t">长折叠块 <strong>双击</strong> 展开</div></div>
+            <div class="minute-row"><div class="n">06</div><div class="t"><kbd>Ctrl</kbd>+<kbd>B</kbd> 侧栏</div></div>
+            <div class="minute-row"><div class="n">07</div><div class="t">（可选）按 <a href="#ch4-1">4.1</a> 跑文档</div></div>
+            <div class="minute-row"><div class="n">08</div><div class="t">（可选）按 <a href="#ch4-2">4.2</a> 扫 C 代码</div></div>
+          </div>
         </section>
 
         <section id="ch1">
           <span class="chapter-label">Chapter 01</span>
           <h2>开始使用</h2>
-
-          <h3 id="ch1-1"><span class="num">1.1</span>连接模型</h3>
-          <p>Room 需要可用的大模型（云端或本机服务）才能对话和生成文档。</p>
-          <p><strong>推荐（终端）：</strong></p>
+          <h3><span class="num">1.1</span>连接模型</h3>
+          <p>Room 需要可用的大模型才能对话和生成文档。</p>
           <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
           <pre><code>room setup</code></pre>
-          <p>按提示选择服务商并填写 API 密钥。本机模型若无需密钥，按提示跳过即可。</p>
-          <p><strong>已在界面内时：</strong></p>
-          <ul>
-            <li>按 <kbd>Ctrl</kbd>+<kbd>M</kbd>，或</li>
-            <li>输入 <code>/setup</code></li>
-          </ul>
-          <p>
-            配置保存在本机，与项目目录分离。完成后可用 <code>/model</code> 切换具体模型；
-            窗口底部状态栏会显示当前模型名称。
-          </p>
-
-          <h3 id="ch1-2"><span class="num">1.2</span>进入项目再启动</h3>
-          <p>Room 将<strong>当前工作目录</strong>视为项目根目录：</p>
+          <p>界面内：<kbd>Ctrl</kbd>+<kbd>M</kbd> 或 <code>/setup</code>。配置在本机；可用 <code>/model</code> 切换模型。</p>
+          <h3><span class="num">1.2</span>进入项目再启动</h3>
           <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
           <pre><code>cd 您的项目路径
 room</code></pre>
-          <p>
-            请先进入真实项目目录再启动，以便助手正确感知路径与文件。
-            在错误目录中打开时，回答往往缺少项目上下文。
-          </p>
-
-          <h3 id="ch1-3"><span class="num">1.3</span>首次建议自检（可选）</h3>
+          <h3><span class="num">1.3</span>首次建议自检（可选）</h3>
           <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
           <pre><code>room doctor</code></pre>
-          <p>
-            若引擎、助手（agent）、技能（skills）、模型（model）均正常，即可开始使用。
-            判读说明见 <a href="#app-c">附录 C</a>。
-          </p>
+          <p>判读见 <a href="#app-c">附录 C</a>。</p>
         </section>
 
         <section id="ch2">
           <span class="chapter-label">Chapter 02</span>
           <h2>认识界面</h2>
-
           <div class="ui-mock" aria-label="界面示意">
             <div class="bar">Room · 标题栏</div>
             <div class="body">
-              <div class="pane">
-                <div class="hi">对话消息区</div>
-                提问与回复 · 可滚动 · 可选中复制
-              </div>
-              <div class="pane">
-                <div class="hi">进度 / 大纲</div>
-                可关闭
-              </div>
+              <div class="pane"><div class="hi">对话消息区</div>提问与回复</div>
+              <div class="pane"><div class="hi">进度 / 大纲</div>可关闭</div>
             </div>
             <div class="input">输入框 · 自然语言或 / 命令</div>
-            <div class="status">状态栏 · 快捷键提示 · 当前模型</div>
+            <div class="status">状态栏 · 快捷键 · 当前模型</div>
           </div>
-
           <div class="table-wrap">
             <table>
-              <thead>
-                <tr><th>区域</th><th>作用</th></tr>
-              </thead>
+              <thead><tr><th>区域</th><th>作用</th></tr></thead>
               <tbody>
-                <tr><td>对话消息区</td><td>您的提问、助手回复与执行过程；可滚动，可选中复制</td></tr>
-                <tr><td>右侧栏</td><td>文档任务进度与大纲；不需要时可关闭以加宽对话区</td></tr>
-                <tr><td>输入框</td><td>自然语言，或输入 <code>/</code> 使用命令</td></tr>
-                <tr><td>状态栏</td><td>常用快捷键提示与当前模型</td></tr>
+                <tr><td>对话消息区</td><td>提问、回复与过程；可滚、可选中复制</td></tr>
+                <tr><td>右侧栏</td><td>文档进度与大纲</td></tr>
+                <tr><td>输入框</td><td>自然语言或 <code>/</code> 命令</td></tr>
+                <tr><td>状态栏</td><td>快捷键提示与当前模型</td></tr>
               </tbody>
             </table>
           </div>
-
-          <h3>发送与滚动（体验说明）</h3>
-          <ul>
-            <li>发送后，您的问题会<strong>置于对话区上方</strong>，下方留给回复。</li>
-            <li>回复变长时，列表会<strong>跟随最新内容</strong>向下滚动。</li>
-            <li>若您<strong>手动向上翻阅</strong>历史，不会被强制拉回底部。</li>
-            <li>上一任务未结束时，新消息会<strong>自动排队</strong>，按顺序处理，无需担心丢失。</li>
-          </ul>
+          <h3 id="scroll-ux">发送与滚动</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>现象</th><th>含义</th></tr></thead>
+              <tbody>
+                <tr><td>问题在上方，下面留白</td><td>本轮从问题开始读</td></tr>
+                <tr><td>跟着最新内容往下</td><td>自动跟读</td></tr>
+                <tr><td>手动上翻不被拽回</td><td>浏览历史优先</td></tr>
+                <tr><td>忙时再发送会排队</td><td>不丢消息</td></tr>
+                <tr><td>短回复后下方空白</td><td>顶对齐（不是故障）</td></tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section id="ch3">
           <span class="chapter-label">Chapter 03</span>
           <h2>日常操作</h2>
-
           <h3 id="ch3-1"><span class="num">3.1</span>对话</h3>
-          <p>在输入框输入问题，按 <kbd>Enter</kbd> 发送。例如：</p>
-          <ul>
-            <li>「这个项目整体结构是怎样的？」</li>
-            <li>「这段报错是什么意思？」</li>
-            <li>「帮我列一下主要源码目录」</li>
-          </ul>
+          <p>输入问题，<kbd>Enter</kbd> 发送。例句见 <a href="#examples">示例集</a>。</p>
           <div class="table-wrap">
             <table>
               <thead><tr><th>操作</th><th>方法</th></tr></thead>
               <tbody>
                 <tr><td>发送</td><td><kbd>Enter</kbd></td></tr>
-                <tr><td>换行（多行）</td><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td></tr>
-                <tr><td>复制</td><td>鼠标拖选后松开（通常进入系统剪贴板）</td></tr>
-                <tr><td>展开过长内容</td><td><strong>双击</strong>该内容块，可展开或收起</td></tr>
-                <tr><td>中断当前任务</td><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td></tr>
-                <tr><td>清空对话显示</td><td><code>/clear</code> 或 <kbd>Ctrl</kbd>+<kbd>L</kbd></td></tr>
+                <tr><td>换行</td><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td></tr>
+                <tr><td>展开长内容</td><td><strong>双击</strong></td></tr>
+                <tr><td>中断</td><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td></tr>
+                <tr><td>清空显示</td><td><code>/clear</code> 或 <kbd>Ctrl</kbd>+<kbd>L</kbd></td></tr>
               </tbody>
             </table>
           </div>
-
-          <h3 id="ch3-2"><span class="num">3.2</span>生成技术文档</h3>
-          <p>典型路径如下。</p>
-          <ol class="steps">
-            <li>
-              <span class="step-title">准备样例</span>
-              <p>
-                作为格式与章节结构的参考。优先使用 <strong>.docx</strong> 或 <strong>.md</strong>。
-                若仅有旧版 <strong>.doc</strong>，请先用 Word 或 WPS <strong>另存为 .docx</strong> 再注册，兼容性更好。
-              </p>
-            </li>
-            <li>
-              <span class="step-title">注册模板</span>
-              <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
-              <pre><code>/template register ./样例文件.docx 模板显示名称</code></pre>
-            </li>
-            <li>
-              <span class="step-title">开始生成</span>
-              <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
-              <pre><code>/new</code></pre>
-              <p>按界面提示选择模板、补充资料并确认。右侧「进度 / 大纲」会同步更新。</p>
-            </li>
-            <li>
-              <span class="step-title">中断后继续</span>
-              <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
-              <pre><code>/continue</code></pre>
-              <p>
-                生成结果与过程数据通常位于项目目录相关文件夹中（常见包含 <code>.pd</code> 目录）；
-                具体路径以界面提示为准。
-              </p>
-            </li>
-          </ol>
-
-          <h3 id="ch3-3"><span class="num">3.3</span>使用命令菜单</h3>
-          <p>
-            在输入框输入 <code>/</code>，可打开命令列表：方向键选择，<kbd>Enter</kbd> 确认。
-            完整列表见 <a href="#app-a">附录 A</a>。
-            若安装包中包含专项技能（例如代码检查类），也会出现在 <code>/</code> 菜单中，以您机器上实际显示为准。
-          </p>
-
-          <h3 id="ch3-4"><span class="num">3.4</span>切换模型与侧栏</h3>
+          <h3 id="ch3-2"><span class="num">3.2</span>文档与扫描（入口）</h3>
+          <ul>
+            <li><strong>paper-derived</strong> — 完整步骤 <a href="#ch4-1">4.1</a>；中断恢复 <a href="#ch4-1-2">4.1.2</a></li>
+            <li><strong>oob-divzero</strong> — 完整用法 <a href="#ch4-2">4.2</a></li>
+          </ul>
+          <h3><span class="num">3.3</span>命令菜单与侧栏</h3>
+          <p>输入 <code>/</code> 打开命令列表。完整列表见 <a href="#app-a">附录 A</a>。</p>
           <div class="table-wrap">
             <table>
               <thead><tr><th>需求</th><th>操作</th></tr></thead>
               <tbody>
-                <tr><td>切换或查看模型</td><td><code>/model</code>，或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
-                <tr><td>重新配置连接与密钥</td><td><code>/setup</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
-                <tr><td>显示 / 隐藏右侧栏</td><td><kbd>Ctrl</kbd>+<kbd>B</kbd>（macOS 多为 <kbd>⌘</kbd>+<kbd>B</kbd>）</td></tr>
+                <tr><td>模型</td><td><code>/model</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
+                <tr><td>连接配置</td><td><code>/setup</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
+                <tr><td>侧栏</td><td><kbd>Ctrl</kbd>+<kbd>B</kbd>（macOS <kbd>⌘</kbd>+<kbd>B</kbd>）</td></tr>
               </tbody>
             </table>
           </div>
@@ -838,92 +914,191 @@ room</code></pre>
 
         <section id="ch4">
           <span class="chapter-label">Chapter 04</span>
-          <h2>常见情况</h2>
-          <div class="faq">
-            <article class="faq-item">
-              <h3>能打开界面，但无法回答</h3>
-              <p>多半是模型未配置或密钥无效。</p>
-              <ol>
-                <li>执行 <code>room setup</code>，或在界面中使用 <kbd>Ctrl</kbd>+<kbd>M</kbd> / <code>/setup</code></li>
-                <li>用 <code>/model</code> 确认当前模型</li>
-                <li>在终端执行 <code>room doctor</code>，查看 model、agent 是否正常</li>
-              </ol>
-            </article>
-            <article class="faq-item">
-              <h3>模板注册提示已存在</h3>
-              <p>使用 <code>/template</code> 查看列表：删除旧模板，或更换显示名称后重新注册。</p>
-            </article>
-            <article class="faq-item">
-              <h3>旧版 Word（.doc）注册异常</h3>
-              <p>请先另存为 <strong>.docx</strong> 再注册。旧格式依赖本机转换环境，.docx 更稳定。</p>
-            </article>
-            <article class="faq-item">
-              <h3>右侧栏占用空间</h3>
-              <p>按 <kbd>Ctrl</kbd>+<kbd>B</kbd>（macOS：<kbd>⌘</kbd>+<kbd>B</kbd>）收起；需要查看进度时再打开。</p>
-            </article>
-            <article class="faq-item">
-              <h3>需要停止正在执行的任务</h3>
-              <p>按 <kbd>Ctrl</kbd>+<kbd>C</kbd>。文档任务中断后，多数情况可用 <code>/continue</code> 继续。</p>
-            </article>
-            <article class="faq-item">
-              <h3>已升级软件，界面仍无变化</h3>
-              <p>
-                程序以安装到系统中的文件为准，需<strong>重新运行新版本安装程序</strong>完成升级。
-                仅更新说明文档不会改变程序本身。升级后请新开终端，执行 <code>room --version</code> 核对版本号。
-              </p>
-            </article>
+          <h2>Room 套件</h2>
+          <p>下列能力与 Room <strong>同一安装包交付</strong>，用 <code>/</code> 或自然语言调用（以 <code>room doctor</code> 为准）。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>组件</th><th>解决什么</th><th>详见</th></tr></thead>
+              <tbody>
+                <tr><td><strong>paper-derived</strong></td><td>样例模板派生技术文档</td><td><a href="#ch4-1">4.1</a></td></tr>
+                <tr><td><strong>oob-divzero</strong></td><td>C 越界与除零扫描</td><td><a href="#ch4-2">4.2</a></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>公共约定：</strong>在项目目录启动 <code>room</code>；过程文件（<code>.pd</code>、<code>.oob-divzero</code>）落在该项目；<code>/</code> 可查看命令与 Skills。</p>
+
+          <h3 id="ch4-1"><span class="num">4.1</span>paper-derived：模板派生文档</h3>
+          <h3><span class="num">4.1.1</span>它是什么</h3>
+          <p class="note"><strong>按样例版式与结构，把项目资料「派生」成结构化技术文档。</strong></p>
+          <p>适合设计说明、方案类材料。日常用界面命令即可。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>您要做的事</th><th>在 Room 里</th></tr></thead>
+              <tbody>
+                <tr><td>注册 / 管理模板</td><td><code>/template …</code></td></tr>
+                <tr><td>开始生成</td><td><code>/new</code></td></tr>
+                <tr><td>中断后恢复</td><td><strong><code>/continue</code></strong>（<a href="#ch4-1-2">4.1.2</a>）</td></tr>
+                <tr><td>任务状态</td><td><code>/status</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="ch4-1-2"><span class="num">4.1.2</span>随时中断，随时 <code>/continue</code> 恢复</h3>
+          <p class="note"><strong>文档生成在任何时候被中断、打断或退出后，都可以再开 Room，用 <code>/continue</code> 接着跑——不必从头 <code>/new</code>。</strong></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>情况</th><th>之后怎么做</th></tr></thead>
+              <tbody>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> / 取消</td><td><code>/continue</code></td></tr>
+                <tr><td>关终端、退出 Room</td><td>同一项目 <code>room</code> → <code>/continue</code></td></tr>
+                <tr><td>休眠、断网、进程打断</td><td>同一项目 → <code>/continue</code></td></tr>
+                <tr><td>想先做别的事</td><td>直接停；回来 <code>/continue</code></td></tr>
+                <tr><td>不确定有无未完成任务</td><td><code>/status</code>，有则 <code>/continue</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>进度在<strong>当前项目</strong>（常见 <code>.pd</code>）。请在<strong>同一路径</strong>下继续。</p>
+          <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+          <pre><code>cd 您的项目路径
+room
+/continue</code></pre>
+          <p>仅当提示「无法恢复」时才 <code>/new</code>。<strong>日常默认就是 <code>/continue</code>。</strong></p>
+
+          <h3><span class="num">4.1.3</span>推荐工作流</h3>
+          <ol class="steps">
+            <li><span class="step-title">准备样例</span><p>优先 <strong>.docx / .md</strong>；旧 .doc 先另存为 .docx。</p></li>
+            <li><span class="step-title">注册模板</span>
+              <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+              <pre><code>/template register ./docs/样例-设计说明.docx 设计说明</code></pre>
+              <p><code>/template list</code> · <code>/template delete …</code> · 可选 <code>--fast</code></p>
+            </li>
+            <li><span class="step-title">开始生成</span>
+              <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+              <pre><code>/new</code></pre>
+              <p>选模板 → 补资料 → 确认；右侧进度 / 大纲同步。</p>
+            </li>
+            <li><span class="step-title">中断后</span><p>见 <a href="#ch4-1-2">4.1.2</a>，用 <code>/continue</code>。</p></li>
+          </ol>
+          <p>也可自然语言（命令更稳）：「用『设计说明』模板，根据 docs/需求说明.md 生成一版设计文档。」</p>
+
+          <h3><span class="num">4.1.4</span>结果在哪里</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>类型</th><th>常见位置</th></tr></thead>
+              <tbody>
+                <tr><td>会话 / 中间状态</td><td>项目下 <code>.pd</code></td></tr>
+                <tr><td>交付文档</td><td>完成时界面给出的路径</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="ch4-2"><span class="num">4.2</span>oob-divzero：越界与除零扫描</h3>
+          <h3><span class="num">4.2.1</span>它是什么</h3>
+          <p>专注 C 代码的<strong>数组/缓冲区越界</strong>与<strong>除零/取模零</strong>：</p>
+          <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+          <pre><code>C 源码 → 召回 → AI 判定 → （可选）ASan 验证 → 分级报告</code></pre>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>层</th><th>谁做</th><th>做什么</th></tr></thead>
+              <tbody>
+                <tr><td>召回</td><td>工具</td><td>找出访问与除法检查点</td></tr>
+                <tr><td>判定</td><td>AI 助手</td><td>有无有效边界/非零检查</td></tr>
+                <tr><td>验证</td><td>工具 + sanitizer</td><td>尝试触发崩溃</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3><span class="num">4.2.2</span>在 Room 里怎么用</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>方式</th><th>做法</th></tr></thead>
+              <tbody>
+                <tr><td>斜杠命令</td><td><code>/oob-divzero</code> · <code>/oob-divzero file.c</code> · <code>/oob-divzero src/</code></td></tr>
+                <tr><td>自然语言</td><td>「帮我扫一下 src/driver/ 的越界和除零」</td></tr>
+                <tr><td>Skill</td><td><code>/skill oob-divzero 扫描 ./src</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>请在含目标代码的项目目录下启动 Room。</p>
+
+          <h3><span class="num">4.2.3</span>报告怎么读</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>级别</th><th>含义</th><th>怎么看</th></tr></thead>
+              <tbody>
+                <tr><td>Confirmed</td><td>验证层触发</td><td>优先修</td></tr>
+                <tr><td>Likely</td><td>可疑未复现</td><td>人工再审</td></tr>
+                <tr><td>Defensive</td><td>缺守卫但可能仍安全</td><td>加固建议</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+          <pre><code>.oob-divzero/&lt;时间戳&gt;/
+  pending.json · judged.json · oob-divzero-report.html</code></pre>
+
+          <h3><span class="num">4.2.4</span>能力边界</h3>
+          <p><strong>较好：</strong>同函数内访问与除法、宏守卫、简单指针算术。<br />
+          <strong>较弱：</strong>远距离守卫、未知堆大小、完整 C++——<strong>不是</strong>通用 SAST。</p>
+
+          <h3><span class="num">4.2.5</span>环境与 doctor</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>检查</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td>doctor 中 oob 正常</td><td>CLI 可用</td></tr>
+                <tr><td>缺工具链 / ASan</td><td>仍可召回+判定；Confirmed 受限</td></tr>
+                <tr><td>非有效 Win32 应用</td><td>架构不匹配，重装套件</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
         <section id="ch5">
           <span class="chapter-label">Chapter 05</span>
-          <h2>获取支持</h2>
-          <p>请尽量提供以下信息，便于对接人快速定位：</p>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>序号</th><th>信息</th></tr></thead>
-              <tbody>
-                <tr><td>1</td><td>操作系统版本（例如 Windows 11 64 位）</td></tr>
-                <tr><td>2</td><td><code>room --version</code> 的输出</td></tr>
-                <tr><td>3</td><td><code>room doctor</code> 的<strong>完整</strong>输出</td></tr>
-                <tr><td>4</td><td>操作步骤与界面现象（可附截图）</td></tr>
-              </tbody>
-            </table>
+          <h2>常见情况</h2>
+          <div class="faq">
+            <article class="faq-item"><h3>能开界面但不回答</h3><p><code>room setup</code> / <kbd>Ctrl</kbd>+<kbd>M</kbd> → <code>/model</code> → <code>room doctor</code>。</p></article>
+            <article class="faq-item"><h3>模板已存在</h3><p><code>/template</code> 列表后删除或换名注册。</p></article>
+            <article class="faq-item"><h3>旧 .doc 注册异常</h3><p>先另存为 <strong>.docx</strong>。</p></article>
+            <article class="faq-item"><h3>侧栏占空间</h3><p><kbd>Ctrl</kbd>+<kbd>B</kbd> 收起。</p></article>
+            <article class="faq-item"><h3>停止任务 / 文档中断后</h3>
+              <p><kbd>Ctrl</kbd>+<kbd>C</kbd> 或退出。文档生成：同一项目 <strong><code>/continue</code></strong>（<a href="#ch4-1-2">4.1.2</a>）。</p>
+            </article>
+            <article class="faq-item"><h3>升级后界面没变</h3><p>需重跑安装程序；用 <code>room --version</code> 核对。</p></article>
+            <article class="faq-item"><h3>doctor 报 oob / paper-derived 异常</h3>
+              <p>引擎需与 Room 成对完整套件；oob 二进制架构要匹配；仅缺工具链时日常对话/文档通常仍可用。</p>
+            </article>
+            <article class="faq-item"><h3>底部一大片空白？</h3>
+              <p>通常是短回复顶对齐，不是故障。见 <a href="#scroll-ux">§2</a>。</p>
+            </article>
           </div>
-          <p>请联系<strong>产品供应商</strong>或贵司内部对接人。</p>
+        </section>
+
+        <section id="ch6">
+          <span class="chapter-label">Chapter 06</span>
+          <h2>获取支持</h2>
+          <p>请提供：系统版本、<code>room --version</code>、<code>room doctor</code> 完整输出、操作步骤与现象。联系供应商或内部对接人。</p>
         </section>
 
         <section id="app-a">
           <span class="appendix-tag">Appendix A</span>
           <h2>命令速查</h2>
-          <p>在输入框输入 <code>/</code> 可打开菜单；亦可直接输入完整命令。</p>
           <div class="table-wrap">
             <table>
               <thead><tr><th>命令</th><th>说明</th></tr></thead>
               <tbody>
-                <tr><td><code>/new</code></td><td>新建文档生成任务</td></tr>
-                <tr><td><code>/continue</code></td><td>继续未完成的任务</td></tr>
-                <tr><td><code>/status</code></td><td>查看任务状态</td></tr>
-                <tr><td><code>/template</code></td><td>模板管理（列表、注册、删除等）</td></tr>
-                <tr><td><code>/model</code></td><td>查看或切换模型</td></tr>
-                <tr><td><code>/setup</code></td><td>重新配置模型连接</td></tr>
-                <tr><td><code>/clear</code></td><td>清空当前对话显示</td></tr>
-                <tr><td><code>/help</code></td><td>显示帮助</td></tr>
+                <tr><td><code>/new</code></td><td>新建文档生成</td></tr>
+                <tr><td><code>/continue</code></td><td>恢复文档生成（<a href="#ch4-1-2">4.1.2</a>）</td></tr>
+                <tr><td><code>/status</code></td><td>任务状态</td></tr>
+                <tr><td><code>/template</code></td><td>模板管理</td></tr>
+                <tr><td><code>/model</code> · <code>/setup</code></td><td>模型 / 连接</td></tr>
+                <tr><td><code>/oob-divzero</code></td><td>C 扫描（可带路径）</td></tr>
+                <tr><td><code>/skill …</code> · <code>/skills</code></td><td>Skill</td></tr>
+                <tr><td><code>/clear</code> · <code>/help</code></td><td>清空 / 帮助</td></tr>
               </tbody>
             </table>
           </div>
-          <p><strong>终端命令</strong>（在系统终端中执行）：</p>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>命令</th><th>说明</th></tr></thead>
-              <tbody>
-                <tr><td><code>room</code></td><td>在当前目录启动 Room</td></tr>
-                <tr><td><code>room setup</code></td><td>配置模型连接</td></tr>
-                <tr><td><code>room doctor</code></td><td>环境自检</td></tr>
-                <tr><td><code>room --version</code></td><td>查看版本号</td></tr>
-              </tbody>
-            </table>
-          </div>
+          <p><strong>终端：</strong> <code>room</code> · <code>room setup</code> · <code>room doctor</code> · <code>room --version</code></p>
         </section>
 
         <section id="app-b">
@@ -933,16 +1108,11 @@ room</code></pre>
             <table>
               <thead><tr><th>按键</th><th>功能</th></tr></thead>
               <tbody>
-                <tr><td><kbd>Enter</kbd></td><td>发送</td></tr>
-                <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>换行</td></tr>
-                <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>浏览输入历史，或在菜单中移动</td></tr>
-                <tr><td><kbd>/</kbd></td><td>打开命令菜单</td></tr>
-                <tr><td><kbd>Ctrl</kbd>+<kbd>M</kbd></td><td>模型 / 连接设置</td></tr>
-                <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd>（macOS：<kbd>⌘</kbd>+<kbd>B</kbd>）</td><td>显示或隐藏右侧栏</td></tr>
-                <tr><td><kbd>Ctrl</kbd>+<kbd>L</kbd></td><td>清空消息区</td></tr>
-                <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>中断当前任务</td></tr>
-                <tr><td><kbd>Ctrl</kbd>+<kbd>Q</kbd></td><td>退出</td></tr>
-                <tr><td><kbd>Esc</kbd></td><td>按界面提示取消或回退</td></tr>
+                <tr><td><kbd>Enter</kbd> / <kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>发送 / 换行</td></tr>
+                <tr><td><kbd>/</kbd></td><td>命令菜单</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>M</kbd></td><td>模型设置</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>侧栏</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Q</kbd> / <kbd>L</kbd></td><td>中断 / 退出 / 清空</td></tr>
               </tbody>
             </table>
           </div>
@@ -950,43 +1120,21 @@ room</code></pre>
 
         <section id="app-c">
           <span class="appendix-tag">Appendix C</span>
-          <h2>环境自检（room doctor）</h2>
-          <p>在终端执行：</p>
+          <h2>环境自检</h2>
           <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
           <pre><code>room doctor</code></pre>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>检查结果</th><th>通常含义</th><th>建议</th></tr></thead>
+              <thead><tr><th>结果</th><th>含义</th><th>建议</th></tr></thead>
               <tbody>
-                <tr>
-                  <td>引擎 / agent / skills / model 正常</td>
-                  <td>对话与文档生成可正常使用</td>
-                  <td>—</td>
-                </tr>
-                <tr>
-                  <td>模型未配置</td>
-                  <td>无法对话或生成</td>
-                  <td>执行 <code>room setup</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td>
-                </tr>
-                <tr>
-                  <td>文档转换器未找到</td>
-                  <td>主要影响旧版 .doc</td>
-                  <td>样例另存为 <strong>.docx</strong> 后注册</td>
-                </tr>
-                <tr>
-                  <td>组件无法运行 / 架构相关提示</td>
-                  <td>安装包与系统不匹配或文件损坏</td>
-                  <td>向供应商重新获取安装包并重装</td>
-                </tr>
-                <tr>
-                  <td>编译工具链缺失</td>
-                  <td>仅影响部分深度代码验证</td>
-                  <td>日常对话与写文档通常不受影响</td>
-                </tr>
+                <tr><td>引擎/agent/skills/model 正常</td><td>可用</td><td>—</td></tr>
+                <tr><td>模型未配置</td><td>无法对话</td><td><code>room setup</code></td></tr>
+                <tr><td>转换器未找到</td><td>旧 .doc</td><td>用 .docx</td></tr>
+                <tr><td>组件无法运行</td><td>架构/损坏</td><td>重装套件</td></tr>
+                <tr><td>缺工具链</td><td>深度验证受限</td><td>日常对话/文档通常仍可用</td></tr>
               </tbody>
             </table>
           </div>
-          <p>将完整 <code>room doctor</code> 输出提供给支持人员，可加快响应。</p>
         </section>
 
         <section id="app-d">
@@ -996,16 +1144,13 @@ room</code></pre>
             <table>
               <thead><tr><th>您想…</th><th>这样做</th></tr></thead>
               <tbody>
-                <tr><td>打开 Room</td><td>进入项目目录 → <code>room</code></td></tr>
-                <tr><td>第一次连接模型</td><td><code>room setup</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
-                <tr><td>聊天</td><td>输入框输入 → <kbd>Enter</kbd></td></tr>
-                <tr><td>写文档</td><td><code>/template register …</code> → <code>/new</code></td></tr>
-                <tr><td>接着上次的文档任务</td><td><code>/continue</code></td></tr>
-                <tr><td>切换模型</td><td><code>/model</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
-                <tr><td>检查环境</td><td><code>room doctor</code></td></tr>
-                <tr><td>查看版本</td><td><code>room --version</code></td></tr>
-                <tr><td>收起侧栏</td><td><kbd>Ctrl</kbd>+<kbd>B</kbd> / <kbd>⌘</kbd>+<kbd>B</kbd></td></tr>
-                <tr><td>中断任务</td><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td></tr>
+                <tr><td>打开 Room</td><td>项目目录 → <code>room</code></td></tr>
+                <tr><td>连模型</td><td><code>room setup</code> / <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
+                <tr><td>聊天</td><td>输入 → <kbd>Enter</kbd></td></tr>
+                <tr><td>写文档</td><td><a href="#ch4-1">4.1</a>：register → <code>/new</code></td></tr>
+                <tr><td>文档中断后续</td><td>同一项目 → <code>/continue</code>（<a href="#ch4-1-2">4.1.2</a>）</td></tr>
+                <tr><td>C 扫描</td><td><a href="#ch4-2">4.2</a>：<code>/oob-divzero &lt;路径&gt;</code></td></tr>
+                <tr><td>自检</td><td><code>room doctor</code></td></tr>
               </tbody>
             </table>
           </div>
@@ -1016,18 +1161,10 @@ room</code></pre>
           <h2>修订记录</h2>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>文档版本</th><th>日期</th><th>说明</th></tr></thead>
+              <thead><tr><th>版本</th><th>日期</th><th>说明</th></tr></thead>
               <tbody>
-                <tr>
-                  <td>V1.0</td>
-                  <td>2026-07</td>
-                  <td>首版客户使用说明（含安装）</td>
-                </tr>
-                <tr>
-                  <td>V1.1</td>
-                  <td>2026-07</td>
-                  <td>调整为操作向交付文档：去除安装部署，增强文档信息、目录与附录结构；提供 HTML 精排版</td>
-                </tr>
+                <tr><td>V1.0–V1.4</td><td>2026-07</td><td>交付结构、套件专章、/continue 强调等（见 Markdown 底稿）</td></tr>
+                <tr><td>V1.5</td><td>2026-07</td><td>去重收紧：权威说明单出处，简介与附录改短链</td></tr>
               </tbody>
             </table>
           </div>
@@ -1035,8 +1172,7 @@ room</code></pre>
 
         <footer class="end-mark">
           <div class="line">— 文档结束 —</div>
-          <div>Room · 使用手册 V1.1 · 适用软件版本 0.1.x</div>
-          <div>界面与功能以实际安装版本为准</div>
+          <div>Room · 使用手册 V1.5 · 适用软件版本 0.1.x</div>
         </footer>
       </div>
     </main>
