@@ -559,6 +559,9 @@ class ShellScreen(Screen):
         self._esc_at = 0.0  # double-Esc: clear / rewind / cancel
         self._footer_hint = ""
         self._footer_timer = None
+        # Last painted footer state — skip Static.update (→ full re-layout)
+        # when nothing changed (it runs on every keystroke).
+        self._footer_paint_cache: tuple | None = None
         self._env_err = ""
         # Model readiness (Grok-like): unset / unknown-to-pi blocks chat with guidance.
         self._model_ok: bool = True
@@ -1002,15 +1005,18 @@ class ShellScreen(Screen):
         if need <= 0:
             return
         w = self._msg_log_width()
-        for _ in range(need):
-            log.write(
-                "",
-                width=w,
-                expand=False,
-                shrink=False,
-                scroll_end=False,
-                animate=False,
-            )
+        # One write for all pad rows — this runs after every streamed write,
+        # and N separate write() calls each re-render / refresh the log.
+        from rich.text import Text
+
+        log.write(
+            Text("\n" * (need - 1)) if need > 1 else Text(""),
+            width=w,
+            expand=False,
+            shrink=False,
+            scroll_end=False,
+            animate=False,
+        )
         self._scroll_pad_count = need
 
     def _scroll_line_to_top(self, line_index: int) -> None:
@@ -4454,29 +4460,43 @@ class ShellScreen(Screen):
             return 1
 
     def _paint_live_step(self) -> None:
-        """Pulse rail + diamond; refresh phase/elapsed suffix once per second."""
+        """Pulse rail + diamond; refresh phase/elapsed suffix once per second.
+
+        Runs from the 30fps spin timer. Rewriting log strips invalidates the
+        whole line cache, so only repaint when there is new content (dirty) —
+        pure cosmetic pulses run at ~10fps (every 3rd tick).
+        """
         import time as _time
 
         if not self._live_step_active or not self._live_step_text:
             return
-        # Streaming Thinking: always redraw header + muted body together so
-        # the pulse never drops the body strips.
+        pulse_tick = (int(self._spin_i) % 3) == 0
+        # Streaming Thinking: redraw header + muted body together on new
+        # tokens; otherwise pulse the rail at reduced rate.
         if self._is_agent_thinking_live():
-            if self._agent_thinking_buf or self._agent_thinking_dirty:
+            if self._agent_thinking_dirty or (
+                self._agent_thinking_buf and pulse_tick
+            ):
                 self._paint_live_thinking()
                 return
+            if self._agent_thinking_buf:
+                # Body unchanged and not a pulse tick — skip this frame.
+                return
             # Header-only Thinking… (no tokens yet) — pulse diamond only.
-        # Streaming answer: rewrite prose (no diamond pulse chrome).
+        # Streaming answer: rewrite prose only when new tokens arrived
+        # (nothing in the answer body animates on its own).
         if self._is_agent_answer_live():
-            if self._agent_answer_buf or self._agent_answer_dirty:
+            if self._agent_answer_dirty:
                 self._paint_live_answer()
             return
-        # Chrome pulse every tick; text suffix only when the second rolls
+        # Chrome pulse (~10fps); text suffix only when the second rolls
         # (or phase just changed — caller sets elapsed_i = -1).
         elapsed = 0
         if self._live_step_t0:
             elapsed = max(0, int(_time.monotonic() - self._live_step_t0))
         text_changed = elapsed != self._live_step_elapsed_i
+        if not pulse_tick and not text_changed:
+            return
         if text_changed:
             self._live_step_elapsed_i = elapsed
         display = self._truncate_step_label(self._live_display_label())
@@ -4786,7 +4806,13 @@ class ShellScreen(Screen):
         # Brand-colored single cell — fixed width, no layout shift.
         line = f"[bold {COLOR_BRAND}]{glyph}[/bold {COLOR_BRAND}]{self._activity_tail}"
         try:
-            self.query_one("#activity", Static).update(line)
+            # #activity height is fixed by CSS (0 / 1 via .active) — repaint
+            # only; the default layout=True would reflow the screen at 30fps.
+            bar = self.query_one("#activity", Static)
+            try:
+                bar.update(line, layout=False)
+            except TypeError:
+                bar.update(line)
         except Exception:
             pass
 
@@ -5108,15 +5134,31 @@ class ShellScreen(Screen):
         left = self.query_one("#status-left", Static)
         right = self.query_one("#status-right", Static)
         if self._footer_hint:
+            key = ("hint", self._footer_hint, self._footer_meta_text())
+            if key == self._footer_paint_cache:
+                return
+            self._footer_paint_cache = key
             left.update(self._footer_hint)
-            right.update(self._footer_meta_text())
+            right.update(key[2])
             bar.remove_class("error")
             bar.remove_class("model-warn")
             bar.add_class("hint")
             return
+        # Static.update always forces a screen re-layout; this runs per
+        # keystroke, so skip it entirely while the texts are unchanged.
+        key = (
+            "keys",
+            self._footer_keys_text(),
+            self._footer_meta_text(),
+            bool(self._env_err),
+            bool(self._model_ok),
+        )
+        if key == self._footer_paint_cache:
+            return
+        self._footer_paint_cache = key
         bar.remove_class("hint")
-        left.update(self._footer_keys_text())
-        right.update(self._footer_meta_text())
+        left.update(key[1])
+        right.update(key[2])
         if self._env_err:
             bar.add_class("error")
             bar.remove_class("model-warn")
@@ -5520,6 +5562,10 @@ class ShellScreen(Screen):
         self._slash_mode = "cmd"
         try:
             sug = self.query_one("#slash-suggest", Static)
+            # Called on every keystroke — skip the widget/style churn (and the
+            # re-layout it triggers) when the panel is already closed.
+            if not sug.has_class("active"):
+                return
             sug.update("")
             sug.remove_class("active")
             sug.styles.display = "none"

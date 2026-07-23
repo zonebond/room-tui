@@ -63,6 +63,7 @@ class PromptField(Widget, can_focus=True):
         super().__init__(id=id, classes=classes)
         self._blink_timer: Timer | None = None
         self._vscroll: int = 0  # first visible logical line
+        self._synced_height: int = -1  # last height applied to styles
         self.value = value
         self.placeholder = placeholder
         self.cursor = len(value)
@@ -154,8 +155,18 @@ class PromptField(Widget, can_focus=True):
         return self._row_col_to_index(row, len(line))
 
     def _sync_height(self) -> None:
-        """Grow/shrink widget height to match content (capped)."""
+        """Grow/shrink widget height to match content (capped).
+
+        Only touch styles / trigger a screen re-layout when the line count
+        actually changed — a plain keystroke on the same line must cost a
+        repaint of this 1–8 row widget, not a full-screen reflow.
+        """
         n = self.visible_line_count()
+        if n == self._synced_height:
+            self._ensure_cursor_visible()
+            self.refresh()
+            return
+        self._synced_height = n
         try:
             self.styles.height = n
             self.styles.min_height = n
