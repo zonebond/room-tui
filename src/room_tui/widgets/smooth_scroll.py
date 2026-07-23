@@ -28,14 +28,15 @@ _WHEEL_STEP_X = 3.0
 # Ease-out duration for a single-row coast.
 _WHEEL_DURATION = 0.16
 _WHEEL_EASING = "out_cubic"
-# Min time between accepted 1-line steps (same direction).
-# Absorbs: double CSI per notch, and MouseScroll + Keys.Scroll* pairs —
-# those duplicates arrive within a few ms of each other. Keep the window
-# just wide enough for that: real events from a fast wheel fling or a
-# continuous trackpad gesture run ~10–16ms apart, and a wider window
-# (formerly 20ms) dropped every other genuine step, capping scroll speed
-# at ~50 rows/s and making the list feel sticky.
-_WHEEL_MIN_INTERVAL_S = 0.008
+# Dedup is *source-aware*. The duplicates we must absorb are the SAME
+# physical gesture reported twice through DIFFERENT paths (SGR MouseScroll
+# + key ScrollUp/Down fallback) — those mirror pairs arrive within a few ms.
+# Events repeated on the SAME path are real scroll intent and are never
+# dropped: Windows delivers 3 wheel events per notch (OS "lines per
+# notch") as back-to-back CSI sequences, trackpads stream one event per
+# unit. A source-blind interval window (formerly 8–20ms) collapsed each
+# notch to 1 line and made long transcripts feel impossibly slow.
+_WHEEL_CROSS_SOURCE_S = 0.025  # mouse↔key mirror of one gesture
 
 
 class SmoothScrollMixin:
@@ -58,6 +59,7 @@ class SmoothScrollMixin:
         super().__init__(*args, **kwargs)
         self._last_wheel_accept_mono: float = 0.0
         self._last_wheel_direction: float = 0.0
+        self._last_wheel_source: str = ""
 
     @property
     def allow_vertical_scroll(self) -> bool:
@@ -80,29 +82,48 @@ class SmoothScrollMixin:
             pass
         return bool(getattr(self, "show_vertical_scrollbar", False))
 
-    def _wheel_dedup_blocked(self, direction: float) -> bool:
-        """True if same-direction step is too soon after the last accept."""
+    def _wheel_dedup_blocked(self, direction: float, source: str) -> bool:
+        """True when this step mirrors the last accepted one via another path.
+
+        Same-direction steps from a *different* source within the cross-source
+        window are the mouse↔key echo of one gesture → drop. Steps repeated on
+        the *same* source are genuine scroll amount (3 back-to-back events per
+        Windows wheel notch, continuous trackpad stream) → always accepted.
+        Opposite direction is always accepted (user reversed mid-gesture).
+        """
         now = monotonic()
         last = float(getattr(self, "_last_wheel_accept_mono", 0.0) or 0.0)
         last_dir = float(getattr(self, "_last_wheel_direction", 0.0) or 0.0)
+        last_src = str(getattr(self, "_last_wheel_source", "") or "")
         if last <= 0.0:
             return False
-        if (now - last) >= _WHEEL_MIN_INTERVAL_S:
+        same_dir = (direction > 0 and last_dir > 0) or (
+            direction < 0 and last_dir < 0
+        )
+        if not same_dir:
             return False
-        # Same direction within the window → drop (mouse×2 / mouse+key).
-        # Opposite direction always accepted (user reversed mid-gesture).
-        return (direction > 0 and last_dir > 0) or (direction < 0 and last_dir < 0)
+        if last_src and source != last_src:
+            return (now - last) < _WHEEL_CROSS_SOURCE_S
+        return False
 
-    def _mark_wheel_accepted(self, direction: float) -> None:
+    def _mark_wheel_accepted(self, direction: float, source: str) -> None:
         self._last_wheel_accept_mono = monotonic()
         self._last_wheel_direction = 1.0 if direction > 0 else -1.0
+        self._last_wheel_source = source
 
     def _nudge_scroll_y(self, delta: float) -> bool:
         """Move by exactly one row (sign of *delta*) with ease-out animation."""
         if not self.allow_vertical_scroll:
             return False
         try:
+            # Textual's release_anchor() resets scroll_target_y = scroll_y —
+            # that clobbers the coast target accumulated by earlier events
+            # still animating, capping fast scrolling at ~1 row per animation
+            # (the "wheel spins forever, list barely moves" bug). Keep the
+            # unanchor side-effect, restore the target.
+            keep_target = float(self.scroll_target_y)
             self.release_anchor()
+            self.scroll_target_y = keep_target
         except Exception:
             pass
         max_y = float(self.max_scroll_y)
@@ -133,7 +154,10 @@ class SmoothScrollMixin:
         if not self.allow_horizontal_scroll:
             return False
         try:
+            # Same as _nudge_scroll_y: unanchor without losing the target.
+            keep_target = float(self.scroll_target_y)
             self.release_anchor()
+            self.scroll_target_y = keep_target
         except Exception:
             pass
         max_x = float(self.max_scroll_x)
@@ -162,60 +186,60 @@ class SmoothScrollMixin:
         except Exception:
             return _WHEEL_STEP_X
 
-    def _accept_vertical_step(self, direction: float) -> bool:
+    def _accept_vertical_step(self, direction: float, source: str) -> bool:
         """Single entry for mouse / key / action / pointer — 1 line + dedup.
 
         Returns True when the input was consumed (including deduped duplicates)
         so callers can stop the event and prevent Textual's default ×2 path.
         """
         direction = 1.0 if float(direction) > 0 else -1.0
-        if self._wheel_dedup_blocked(direction):
+        if self._wheel_dedup_blocked(direction, source):
             return True
         moved = self._nudge_scroll_y(direction * _WHEEL_STEP_Y)
         if moved:
-            self._mark_wheel_accepted(direction)
+            self._mark_wheel_accepted(direction, source)
         else:
             # At end of range: still mark so a paired key event cannot add a
             # phantom step after a no-op mouse event at the boundary.
-            self._mark_wheel_accepted(direction)
+            self._mark_wheel_accepted(direction, source)
         return True
 
     # --- All Textual vertical entry points → one-line smooth path ----------
 
     def _scroll_down_for_pointer(self, **kwargs: Any) -> bool:
-        self._accept_vertical_step(+1.0)
+        self._accept_vertical_step(+1.0, "mouse")
         return True
 
     def _scroll_up_for_pointer(self, **kwargs: Any) -> bool:
-        self._accept_vertical_step(-1.0)
+        self._accept_vertical_step(-1.0, "mouse")
         return True
 
     def scroll_down(self, **kwargs: Any) -> None:
         """Override Widget.scroll_down (+1 via force-stop) with smooth 1-line."""
-        self._accept_vertical_step(+1.0)
+        self._accept_vertical_step(+1.0, "key")
 
     def scroll_up(self, **kwargs: Any) -> None:
         """Override Widget.scroll_up with smooth 1-line."""
-        self._accept_vertical_step(-1.0)
+        self._accept_vertical_step(-1.0, "key")
 
     def action_scroll_down(self) -> None:
-        """Keys.ScrollDown / action — same path as mouse (deduped)."""
+        """Keys.ScrollDown / action — key fallback path (cross-deduped)."""
         if not self.allow_vertical_scroll:
             raise SkipAction()
-        self._accept_vertical_step(+1.0)
+        self._accept_vertical_step(+1.0, "key")
 
     def action_scroll_up(self) -> None:
-        """Keys.ScrollUp / action — same path as mouse (deduped)."""
+        """Keys.ScrollUp / action — key fallback path (cross-deduped)."""
         if not self.allow_vertical_scroll:
             raise SkipAction()
-        self._accept_vertical_step(-1.0)
+        self._accept_vertical_step(-1.0, "key")
 
     def _on_mouse_scroll_down(self, event: events.MouseScrollDown) -> None:
         if event.ctrl or event.shift:
             if self._nudge_scroll_x(+self._wheel_delta_x()):
                 event.stop()
             return
-        self._accept_vertical_step(+1.0)
+        self._accept_vertical_step(+1.0, "mouse")
         event.stop()
         try:
             event.prevent_default()
@@ -227,7 +251,7 @@ class SmoothScrollMixin:
             if self._nudge_scroll_x(-self._wheel_delta_x()):
                 event.stop()
             return
-        self._accept_vertical_step(-1.0)
+        self._accept_vertical_step(-1.0, "mouse")
         event.stop()
         try:
             event.prevent_default()
