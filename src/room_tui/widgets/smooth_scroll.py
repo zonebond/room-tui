@@ -29,10 +29,13 @@ _WHEEL_STEP_X = 3.0
 _WHEEL_DURATION = 0.16
 _WHEEL_EASING = "out_cubic"
 # Min time between accepted 1-line steps (same direction).
-# Absorbs: double CSI per notch, and MouseScroll + Keys.Scroll* pairs
-# that arrive within a few ms. Continuous trackpad (~16ms) still passes
-# every other event ≈ smooth 1-line steps without stacking to 2.
-_WHEEL_MIN_INTERVAL_S = 0.02
+# Absorbs: double CSI per notch, and MouseScroll + Keys.Scroll* pairs —
+# those duplicates arrive within a few ms of each other. Keep the window
+# just wide enough for that: real events from a fast wheel fling or a
+# continuous trackpad gesture run ~10–16ms apart, and a wider window
+# (formerly 20ms) dropped every other genuine step, capping scroll speed
+# at ~50 rows/s and making the list feel sticky.
+_WHEEL_MIN_INTERVAL_S = 0.008
 
 
 class SmoothScrollMixin:
