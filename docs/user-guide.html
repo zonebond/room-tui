@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Room 使用手册 · V1.1</title>
+  <meta name="description" content="Room 本地智能工程助手 · 使用手册（操作说明）" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --bg-elev: #ffffff;
+      --bg-soft: #efece4;
+      --bg-code: #1e2430;
+      --line: rgba(28, 36, 48, 0.10);
+      --line-strong: rgba(28, 36, 48, 0.16);
+      --ink: #1c2430;
+      --ink-dim: #4a5564;
+      --ink-mute: #7a8494;
+      --accent: #2f5d8c;
+      --accent-deep: #234a70;
+      --accent-dim: rgba(47, 93, 140, 0.09);
+      --accent-glow: rgba(47, 93, 140, 0.06);
+      --warm: #9a5b2f;
+      --warm-dim: rgba(154, 91, 47, 0.10);
+      --radius: 10px;
+      --radius-sm: 7px;
+      --max: 720px;
+      --nav-w: 236px;
+      --font-display: "Instrument Serif", "Songti SC", "Noto Serif SC", serif;
+      --font-body: "DM Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-mono: "IBM Plex Mono", "SF Mono", "Menlo", "Consolas", monospace;
+      --shadow: 0 12px 40px rgba(28, 36, 48, 0.07);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.65;
+      background:
+        radial-gradient(900px 480px at 8% -8%, var(--accent-glow), transparent 55%),
+        radial-gradient(700px 360px at 100% 0%, rgba(154, 91, 47, 0.04), transparent 50%),
+        var(--bg);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color .15s, color .15s;
+    }
+    a:hover {
+      color: var(--accent-deep);
+      border-bottom-color: rgba(47, 93, 140, 0.35);
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: var(--nav-w) minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 28px 18px 32px;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(14px);
+      overflow-y: auto;
+      z-index: 10;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .nav-brand .mark {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--accent);
+    }
+    .nav-brand strong {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+    }
+    .nav-meta {
+      font-size: 0.75rem;
+      color: var(--ink-mute);
+      margin: 0 0 28px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .nav h2 {
+      margin: 0 0 10px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .nav ol, .nav ul {
+      list-style: none;
+      margin: 0 0 22px;
+      padding: 0;
+    }
+    .nav li { margin: 0; }
+    .nav a {
+      display: block;
+      padding: 7px 10px;
+      margin: 1px 0;
+      border-radius: 6px;
+      border-bottom: none;
+      color: var(--ink-dim);
+      font-size: 0.9rem;
+      transition: background .15s, color .15s;
+    }
+    .nav a:hover, .nav a:focus-visible {
+      background: var(--accent-dim);
+      color: var(--accent-deep);
+      outline: none;
+    }
+    .nav .sub a {
+      padding-left: 18px;
+      font-size: 0.82rem;
+      color: var(--ink-mute);
+    }
+    .nav-foot {
+      margin-top: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      font-size: 0.75rem;
+      color: var(--ink-mute);
+      line-height: 1.5;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 0 48px 96px;
+    }
+    .content {
+      max-width: calc(var(--max) + 80px);
+      margin: 0 auto;
+    }
+
+    .cover {
+      padding: 72px 0 56px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 48px;
+    }
+    .cover-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .cover-kicker::before {
+      content: "";
+      width: 18px;
+      height: 1px;
+      background: var(--accent);
+    }
+    .cover h1 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 5vw, 3.75rem);
+      font-weight: 400;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .cover h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .cover-lead {
+      max-width: 34em;
+      margin: 0 0 32px;
+      font-size: 1.08rem;
+      color: var(--ink-dim);
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line-strong);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .meta-cell {
+      background: var(--bg-elev);
+      padding: 16px 18px;
+    }
+    .meta-cell dt {
+      margin: 0 0 6px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .meta-cell dd {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--ink);
+    }
+
+    section {
+      scroll-margin-top: 28px;
+      margin-bottom: 56px;
+    }
+    .chapter-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    h2 {
+      margin: 0 0 20px;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+    h3 {
+      margin: 32px 0 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--ink);
+    }
+    h3 .num {
+      color: var(--ink-mute);
+      font-weight: 500;
+      margin-right: 6px;
+    }
+    p { margin: 0 0 14px; color: var(--ink-dim); }
+    p strong, li strong { color: var(--ink); font-weight: 600; }
+    ul, ol {
+      margin: 0 0 16px;
+      padding-left: 1.25em;
+      color: var(--ink-dim);
+    }
+    li { margin: 0.35em 0; }
+    li::marker { color: var(--ink-mute); }
+
+    .note {
+      margin: 18px 0;
+      padding: 14px 16px;
+      border-left: 3px solid var(--accent);
+      background: var(--accent-dim);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      color: var(--ink-dim);
+      font-size: 0.95rem;
+    }
+    .note strong { color: var(--ink); }
+
+    .path-cards {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0 8px;
+    }
+    .path-card {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 1px 0 rgba(28, 36, 48, 0.03);
+    }
+    .path-card .when {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--warm);
+    }
+    .path-card .go {
+      font-size: 0.9rem;
+      color: var(--ink-dim);
+    }
+    .path-card a { color: var(--accent); }
+
+    .table-wrap {
+      margin: 14px 0 20px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--bg-elev);
+      box-shadow: var(--shadow);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    th, td {
+      padding: 11px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      background: var(--bg-soft);
+    }
+    tr:last-child td { border-bottom: none; }
+    td { color: var(--ink-dim); }
+    td:first-child, th:first-child { color: var(--ink); font-weight: 500; }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.86em;
+      color: var(--accent-deep);
+      background: var(--accent-dim);
+      padding: 0.12em 0.4em;
+      border-radius: 4px;
+    }
+    kbd {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.78em;
+      font-weight: 500;
+      color: var(--ink);
+      background: var(--bg-elev);
+      border: 1px solid var(--line-strong);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      padding: 0.12em 0.45em;
+      white-space: nowrap;
+      box-shadow: 0 1px 0 rgba(28, 36, 48, 0.04);
+    }
+
+    pre {
+      margin: 12px 0 18px;
+      padding: 16px 18px;
+      background: var(--bg-code);
+      border: 1px solid #2a3344;
+      border-radius: var(--radius);
+      overflow-x: auto;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      color: #e8edf5;
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+    .term-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: -4px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+    }
+    .term-label span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #c5ccd6;
+    }
+    .term-label span:nth-child(1) { background: #e07a7a; }
+    .term-label span:nth-child(2) { background: #e0b05c; }
+    .term-label span:nth-child(3) { background: #6dbf7a; }
+
+    .ui-mock {
+      margin: 18px 0 22px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-elev);
+      box-shadow: var(--shadow);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+    .ui-mock .bar {
+      padding: 8px 12px;
+      background: var(--bg-soft);
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-mute);
+      letter-spacing: 0.04em;
+    }
+    .ui-mock .body {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      min-height: 120px;
+    }
+    .ui-mock .pane {
+      padding: 16px 14px;
+      color: var(--ink-dim);
+    }
+    .ui-mock .pane + .pane {
+      border-left: 1px solid var(--line);
+      background: rgba(47, 93, 140, 0.04);
+      color: var(--ink-mute);
+    }
+    .ui-mock .input {
+      border-top: 1px solid var(--line);
+      padding: 10px 14px;
+      color: var(--ink-mute);
+      background: #fbfaf7;
+    }
+    .ui-mock .status {
+      border-top: 1px solid var(--line);
+      padding: 7px 12px;
+      background: var(--bg-soft);
+      color: var(--ink-mute);
+      font-size: 0.72rem;
+    }
+    .ui-mock .hi { color: var(--accent); font-weight: 600; }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 16px 0 20px;
+    }
+    .steps > li {
+      position: relative;
+      padding: 0 0 20px 44px;
+      margin: 0;
+      border-left: 1px solid var(--line);
+      margin-left: 14px;
+    }
+    .steps > li:last-child {
+      border-left-color: transparent;
+      padding-bottom: 0;
+    }
+    .steps > li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: -14px;
+      top: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-elev);
+      border: 1px solid var(--line-strong);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 2px rgba(28, 36, 48, 0.06);
+    }
+    .steps .step-title {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .faq {
+      display: grid;
+      gap: 12px;
+    }
+    .faq-item {
+      padding: 16px 18px;
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 0 rgba(28, 36, 48, 0.03);
+    }
+    .faq-item h3 {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+    }
+    .faq-item p:last-child { margin-bottom: 0; }
+
+    .appendix-tag {
+      display: inline-block;
+      margin-bottom: 6px;
+      padding: 3px 8px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--warm);
+      background: var(--warm-dim);
+      border-radius: 4px;
+    }
+
+    .end-mark {
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      color: var(--ink-mute);
+      font-size: 0.85rem;
+    }
+    .end-mark .line {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      color: var(--ink-dim);
+      margin-bottom: 8px;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #111;
+        font-size: 11pt;
+      }
+      .shell { display: block; }
+      .nav { display: none; }
+      .main { padding: 0; }
+      .content { max-width: none; }
+      .cover { padding-top: 0; }
+      .meta-grid, .table-wrap, .ui-mock, pre, .faq-item, .path-card {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+      a { color: #111; border: none; }
+      code, kbd { color: #111; background: #f0f0f0; }
+      pre { background: #f6f6f6; border-color: #ddd; }
+      pre code { color: #222; }
+      p, li, td { color: #333; }
+      h2, h3, td:first-child { color: #111; }
+      .chapter-label, .cover-kicker { color: #234a70; }
+      section { break-inside: avoid-page; }
+    }
+
+    @media (max-width: 920px) {
+      .shell { grid-template-columns: 1fr; }
+      .nav {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+      .main { padding: 0 20px 64px; }
+      .meta-grid { grid-template-columns: 1fr 1fr; }
+      .path-card { grid-template-columns: 1fr; gap: 4px; }
+      .ui-mock .body { grid-template-columns: 1fr; }
+      .ui-mock .pane + .pane { border-left: none; border-top: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="nav" aria-label="目录">
+      <div class="nav-brand">
+        <span class="mark" aria-hidden="true"></span>
+        <strong>Room</strong>
+      </div>
+      <p class="nav-meta">使用手册 · V1.1</p>
+
+      <h2>正文</h2>
+      <ol>
+        <li><a href="#foreword">前言</a></li>
+        <li><a href="#ch1">1. 开始使用</a></li>
+        <li><a href="#ch2">2. 认识界面</a></li>
+        <li><a href="#ch3">3. 日常操作</a></li>
+        <li class="sub"><a href="#ch3-1">· 对话</a></li>
+        <li class="sub"><a href="#ch3-2">· 生成文档</a></li>
+        <li><a href="#ch4">4. 常见情况</a></li>
+        <li><a href="#ch5">5. 获取支持</a></li>
+      </ol>
+
+      <h2>附录</h2>
+      <ul>
+        <li><a href="#app-a">A. 命令速查</a></li>
+        <li><a href="#app-b">B. 快捷键</a></li>
+        <li><a href="#app-c">C. 环境自检</a></li>
+        <li><a href="#app-d">D. 一页小抄</a></li>
+        <li><a href="#app-e">E. 修订记录</a></li>
+      </ul>
+
+      <div class="nav-foot">
+        操作说明 · 不含安装部署<br />
+        适用 Room 0.1.x
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="content">
+        <header class="cover">
+          <div class="cover-kicker">Product Handbook</div>
+          <h1>Room <em>使用手册</em></h1>
+          <p class="cover-lead">
+            本地智能工程助手的操作说明：如何连接模型、在项目中对话、按模板生成技术文档，以及遇到情况时如何自助处理。
+          </p>
+          <dl class="meta-grid">
+            <div class="meta-cell"><dt>产品名称</dt><dd>Room · 本地智能工程助手</dd></div>
+            <div class="meta-cell"><dt>文档类型</dt><dd>使用手册（操作说明）</dd></div>
+            <div class="meta-cell"><dt>适用版本</dt><dd>Room 0.1.x</dd></div>
+            <div class="meta-cell"><dt>文档版本</dt><dd>V1.1</dd></div>
+            <div class="meta-cell"><dt>读者</dt><dd>终端用户 / 项目使用方</dd></div>
+            <div class="meta-cell"><dt>说明范围</dt><dd>日常操作与排障（不含安装）</dd></div>
+          </dl>
+          <p class="note" style="margin-top:24px">
+            本手册随软件版本更新。界面文案、菜单项以您<strong>当前安装的 Room</strong> 为准。
+          </p>
+        </header>
+
+        <section id="foreword">
+          <span class="chapter-label">Foreword</span>
+          <h2>前言</h2>
+
+          <h3>这份手册是什么</h3>
+          <p>
+            Room 装在您的电脑上，围绕<strong>当前打开的项目目录</strong>工作。配置好模型后，您可以：
+          </p>
+          <ul>
+            <li>用自然语言完成开发相关问答与辅助操作</li>
+            <li>按样例模板派生结构化技术文档</li>
+            <li>在界面中查看任务进度与文档大纲</li>
+          </ul>
+          <p>密钥与连接配置保存在本机用户目录，<strong>不会</strong>写入项目源码。</p>
+
+          <h3>阅读建议</h3>
+          <div class="path-cards">
+            <div class="path-card">
+              <div class="when">第一次用</div>
+              <div class="go"><a href="#ch1">第 1 章 开始使用</a> → <a href="#ch2">第 2 章 认识界面</a></div>
+            </div>
+            <div class="path-card">
+              <div class="when">要聊天 / 查代码</div>
+              <div class="go"><a href="#ch3-1">第 3 章 · 对话</a></div>
+            </div>
+            <div class="path-card">
+              <div class="when">要写技术文档</div>
+              <div class="go"><a href="#ch3-2">第 3 章 · 生成文档</a></div>
+            </div>
+            <div class="path-card">
+              <div class="when">命令与快捷键</div>
+              <div class="go"><a href="#app-a">附录 A</a> / <a href="#app-b">附录 B</a></div>
+            </div>
+            <div class="path-card">
+              <div class="when">出了问题</div>
+              <div class="go"><a href="#ch4">第 4 章</a> → <a href="#app-c">附录 C 环境自检</a></div>
+            </div>
+          </div>
+
+          <h3>本手册不包含</h3>
+          <p>
+            安装包获取、系统安装步骤、服务器部署与二次开发说明。
+            相关内容请参阅安装包附带说明，或联系产品对接人。
+          </p>
+        </section>
+
+        <section id="ch1">
+          <span class="chapter-label">Chapter 01</span>
+          <h2>开始使用</h2>
+
+          <h3 id="ch1-1"><span class="num">1.1</span>连接模型</h3>
+          <p>Room 需要可用的大模型（云端或本机服务）才能对话和生成文档。</p>
+          <p><strong>推荐（终端）：</strong></p>
+          <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+          <pre><code>room setup</code></pre>
+          <p>按提示选择服务商并填写 API 密钥。本机模型若无需密钥，按提示跳过即可。</p>
+          <p><strong>已在界面内时：</strong></p>
+          <ul>
+            <li>按 <kbd>Ctrl</kbd>+<kbd>M</kbd>，或</li>
+            <li>输入 <code>/setup</code></li>
+          </ul>
+          <p>
+            配置保存在本机，与项目目录分离。完成后可用 <code>/model</code> 切换具体模型；
+            窗口底部状态栏会显示当前模型名称。
+          </p>
+
+          <h3 id="ch1-2"><span class="num">1.2</span>进入项目再启动</h3>
+          <p>Room 将<strong>当前工作目录</strong>视为项目根目录：</p>
+          <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+          <pre><code>cd 您的项目路径
+room</code></pre>
+          <p>
+            请先进入真实项目目录再启动，以便助手正确感知路径与文件。
+            在错误目录中打开时，回答往往缺少项目上下文。
+          </p>
+
+          <h3 id="ch1-3"><span class="num">1.3</span>首次建议自检（可选）</h3>
+          <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+          <pre><code>room doctor</code></pre>
+          <p>
+            若引擎、助手（agent）、技能（skills）、模型（model）均正常，即可开始使用。
+            判读说明见 <a href="#app-c">附录 C</a>。
+          </p>
+        </section>
+
+        <section id="ch2">
+          <span class="chapter-label">Chapter 02</span>
+          <h2>认识界面</h2>
+
+          <div class="ui-mock" aria-label="界面示意">
+            <div class="bar">Room · 标题栏</div>
+            <div class="body">
+              <div class="pane">
+                <div class="hi">对话消息区</div>
+                提问与回复 · 可滚动 · 可选中复制
+              </div>
+              <div class="pane">
+                <div class="hi">进度 / 大纲</div>
+                可关闭
+              </div>
+            </div>
+            <div class="input">输入框 · 自然语言或 / 命令</div>
+            <div class="status">状态栏 · 快捷键提示 · 当前模型</div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>区域</th><th>作用</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>对话消息区</td><td>您的提问、助手回复与执行过程；可滚动，可选中复制</td></tr>
+                <tr><td>右侧栏</td><td>文档任务进度与大纲；不需要时可关闭以加宽对话区</td></tr>
+                <tr><td>输入框</td><td>自然语言，或输入 <code>/</code> 使用命令</td></tr>
+                <tr><td>状态栏</td><td>常用快捷键提示与当前模型</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>发送与滚动（体验说明）</h3>
+          <ul>
+            <li>发送后，您的问题会<strong>置于对话区上方</strong>，下方留给回复。</li>
+            <li>回复变长时，列表会<strong>跟随最新内容</strong>向下滚动。</li>
+            <li>若您<strong>手动向上翻阅</strong>历史，不会被强制拉回底部。</li>
+            <li>上一任务未结束时，新消息会<strong>自动排队</strong>，按顺序处理，无需担心丢失。</li>
+          </ul>
+        </section>
+
+        <section id="ch3">
+          <span class="chapter-label">Chapter 03</span>
+          <h2>日常操作</h2>
+
+          <h3 id="ch3-1"><span class="num">3.1</span>对话</h3>
+          <p>在输入框输入问题，按 <kbd>Enter</kbd> 发送。例如：</p>
+          <ul>
+            <li>「这个项目整体结构是怎样的？」</li>
+            <li>「这段报错是什么意思？」</li>
+            <li>「帮我列一下主要源码目录」</li>
+          </ul>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>操作</th><th>方法</th></tr></thead>
+              <tbody>
+                <tr><td>发送</td><td><kbd>Enter</kbd></td></tr>
+                <tr><td>换行（多行）</td><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td></tr>
+                <tr><td>复制</td><td>鼠标拖选后松开（通常进入系统剪贴板）</td></tr>
+                <tr><td>展开过长内容</td><td><strong>双击</strong>该内容块，可展开或收起</td></tr>
+                <tr><td>中断当前任务</td><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td></tr>
+                <tr><td>清空对话显示</td><td><code>/clear</code> 或 <kbd>Ctrl</kbd>+<kbd>L</kbd></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="ch3-2"><span class="num">3.2</span>生成技术文档</h3>
+          <p>典型路径如下。</p>
+          <ol class="steps">
+            <li>
+              <span class="step-title">准备样例</span>
+              <p>
+                作为格式与章节结构的参考。优先使用 <strong>.docx</strong> 或 <strong>.md</strong>。
+                若仅有旧版 <strong>.doc</strong>，请先用 Word 或 WPS <strong>另存为 .docx</strong> 再注册，兼容性更好。
+              </p>
+            </li>
+            <li>
+              <span class="step-title">注册模板</span>
+              <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+              <pre><code>/template register ./样例文件.docx 模板显示名称</code></pre>
+            </li>
+            <li>
+              <span class="step-title">开始生成</span>
+              <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+              <pre><code>/new</code></pre>
+              <p>按界面提示选择模板、补充资料并确认。右侧「进度 / 大纲」会同步更新。</p>
+            </li>
+            <li>
+              <span class="step-title">中断后继续</span>
+              <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+              <pre><code>/continue</code></pre>
+              <p>
+                生成结果与过程数据通常位于项目目录相关文件夹中（常见包含 <code>.pd</code> 目录）；
+                具体路径以界面提示为准。
+              </p>
+            </li>
+          </ol>
+
+          <h3 id="ch3-3"><span class="num">3.3</span>使用命令菜单</h3>
+          <p>
+            在输入框输入 <code>/</code>，可打开命令列表：方向键选择，<kbd>Enter</kbd> 确认。
+            完整列表见 <a href="#app-a">附录 A</a>。
+            若安装包中包含专项技能（例如代码检查类），也会出现在 <code>/</code> 菜单中，以您机器上实际显示为准。
+          </p>
+
+          <h3 id="ch3-4"><span class="num">3.4</span>切换模型与侧栏</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>需求</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr><td>切换或查看模型</td><td><code>/model</code>，或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
+                <tr><td>重新配置连接与密钥</td><td><code>/setup</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
+                <tr><td>显示 / 隐藏右侧栏</td><td><kbd>Ctrl</kbd>+<kbd>B</kbd>（macOS 多为 <kbd>⌘</kbd>+<kbd>B</kbd>）</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="ch4">
+          <span class="chapter-label">Chapter 04</span>
+          <h2>常见情况</h2>
+          <div class="faq">
+            <article class="faq-item">
+              <h3>能打开界面，但无法回答</h3>
+              <p>多半是模型未配置或密钥无效。</p>
+              <ol>
+                <li>执行 <code>room setup</code>，或在界面中使用 <kbd>Ctrl</kbd>+<kbd>M</kbd> / <code>/setup</code></li>
+                <li>用 <code>/model</code> 确认当前模型</li>
+                <li>在终端执行 <code>room doctor</code>，查看 model、agent 是否正常</li>
+              </ol>
+            </article>
+            <article class="faq-item">
+              <h3>模板注册提示已存在</h3>
+              <p>使用 <code>/template</code> 查看列表：删除旧模板，或更换显示名称后重新注册。</p>
+            </article>
+            <article class="faq-item">
+              <h3>旧版 Word（.doc）注册异常</h3>
+              <p>请先另存为 <strong>.docx</strong> 再注册。旧格式依赖本机转换环境，.docx 更稳定。</p>
+            </article>
+            <article class="faq-item">
+              <h3>右侧栏占用空间</h3>
+              <p>按 <kbd>Ctrl</kbd>+<kbd>B</kbd>（macOS：<kbd>⌘</kbd>+<kbd>B</kbd>）收起；需要查看进度时再打开。</p>
+            </article>
+            <article class="faq-item">
+              <h3>需要停止正在执行的任务</h3>
+              <p>按 <kbd>Ctrl</kbd>+<kbd>C</kbd>。文档任务中断后，多数情况可用 <code>/continue</code> 继续。</p>
+            </article>
+            <article class="faq-item">
+              <h3>已升级软件，界面仍无变化</h3>
+              <p>
+                程序以安装到系统中的文件为准，需<strong>重新运行新版本安装程序</strong>完成升级。
+                仅更新说明文档不会改变程序本身。升级后请新开终端，执行 <code>room --version</code> 核对版本号。
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="ch5">
+          <span class="chapter-label">Chapter 05</span>
+          <h2>获取支持</h2>
+          <p>请尽量提供以下信息，便于对接人快速定位：</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>序号</th><th>信息</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>操作系统版本（例如 Windows 11 64 位）</td></tr>
+                <tr><td>2</td><td><code>room --version</code> 的输出</td></tr>
+                <tr><td>3</td><td><code>room doctor</code> 的<strong>完整</strong>输出</td></tr>
+                <tr><td>4</td><td>操作步骤与界面现象（可附截图）</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>请联系<strong>产品供应商</strong>或贵司内部对接人。</p>
+        </section>
+
+        <section id="app-a">
+          <span class="appendix-tag">Appendix A</span>
+          <h2>命令速查</h2>
+          <p>在输入框输入 <code>/</code> 可打开菜单；亦可直接输入完整命令。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>命令</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td><code>/new</code></td><td>新建文档生成任务</td></tr>
+                <tr><td><code>/continue</code></td><td>继续未完成的任务</td></tr>
+                <tr><td><code>/status</code></td><td>查看任务状态</td></tr>
+                <tr><td><code>/template</code></td><td>模板管理（列表、注册、删除等）</td></tr>
+                <tr><td><code>/model</code></td><td>查看或切换模型</td></tr>
+                <tr><td><code>/setup</code></td><td>重新配置模型连接</td></tr>
+                <tr><td><code>/clear</code></td><td>清空当前对话显示</td></tr>
+                <tr><td><code>/help</code></td><td>显示帮助</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>终端命令</strong>（在系统终端中执行）：</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>命令</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td><code>room</code></td><td>在当前目录启动 Room</td></tr>
+                <tr><td><code>room setup</code></td><td>配置模型连接</td></tr>
+                <tr><td><code>room doctor</code></td><td>环境自检</td></tr>
+                <tr><td><code>room --version</code></td><td>查看版本号</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="app-b">
+          <span class="appendix-tag">Appendix B</span>
+          <h2>快捷键</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>按键</th><th>功能</th></tr></thead>
+              <tbody>
+                <tr><td><kbd>Enter</kbd></td><td>发送</td></tr>
+                <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>换行</td></tr>
+                <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>浏览输入历史，或在菜单中移动</td></tr>
+                <tr><td><kbd>/</kbd></td><td>打开命令菜单</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>M</kbd></td><td>模型 / 连接设置</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd>（macOS：<kbd>⌘</kbd>+<kbd>B</kbd>）</td><td>显示或隐藏右侧栏</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>L</kbd></td><td>清空消息区</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>中断当前任务</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>Q</kbd></td><td>退出</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>按界面提示取消或回退</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="app-c">
+          <span class="appendix-tag">Appendix C</span>
+          <h2>环境自检（room doctor）</h2>
+          <p>在终端执行：</p>
+          <div class="term-label" aria-hidden="true"><span></span><span></span><span></span></div>
+          <pre><code>room doctor</code></pre>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>检查结果</th><th>通常含义</th><th>建议</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>引擎 / agent / skills / model 正常</td>
+                  <td>对话与文档生成可正常使用</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>模型未配置</td>
+                  <td>无法对话或生成</td>
+                  <td>执行 <code>room setup</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td>
+                </tr>
+                <tr>
+                  <td>文档转换器未找到</td>
+                  <td>主要影响旧版 .doc</td>
+                  <td>样例另存为 <strong>.docx</strong> 后注册</td>
+                </tr>
+                <tr>
+                  <td>组件无法运行 / 架构相关提示</td>
+                  <td>安装包与系统不匹配或文件损坏</td>
+                  <td>向供应商重新获取安装包并重装</td>
+                </tr>
+                <tr>
+                  <td>编译工具链缺失</td>
+                  <td>仅影响部分深度代码验证</td>
+                  <td>日常对话与写文档通常不受影响</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>将完整 <code>room doctor</code> 输出提供给支持人员，可加快响应。</p>
+        </section>
+
+        <section id="app-d">
+          <span class="appendix-tag">Appendix D</span>
+          <h2>一页小抄</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>您想…</th><th>这样做</th></tr></thead>
+              <tbody>
+                <tr><td>打开 Room</td><td>进入项目目录 → <code>room</code></td></tr>
+                <tr><td>第一次连接模型</td><td><code>room setup</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
+                <tr><td>聊天</td><td>输入框输入 → <kbd>Enter</kbd></td></tr>
+                <tr><td>写文档</td><td><code>/template register …</code> → <code>/new</code></td></tr>
+                <tr><td>接着上次的文档任务</td><td><code>/continue</code></td></tr>
+                <tr><td>切换模型</td><td><code>/model</code> 或 <kbd>Ctrl</kbd>+<kbd>M</kbd></td></tr>
+                <tr><td>检查环境</td><td><code>room doctor</code></td></tr>
+                <tr><td>查看版本</td><td><code>room --version</code></td></tr>
+                <tr><td>收起侧栏</td><td><kbd>Ctrl</kbd>+<kbd>B</kbd> / <kbd>⌘</kbd>+<kbd>B</kbd></td></tr>
+                <tr><td>中断任务</td><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="app-e">
+          <span class="appendix-tag">Appendix E</span>
+          <h2>修订记录</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>文档版本</th><th>日期</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>V1.0</td>
+                  <td>2026-07</td>
+                  <td>首版客户使用说明（含安装）</td>
+                </tr>
+                <tr>
+                  <td>V1.1</td>
+                  <td>2026-07</td>
+                  <td>调整为操作向交付文档：去除安装部署，增强文档信息、目录与附录结构；提供 HTML 精排版</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer class="end-mark">
+          <div class="line">— 文档结束 —</div>
+          <div>Room · 使用手册 V1.1 · 适用软件版本 0.1.x</div>
+          <div>界面与功能以实际安装版本为准</div>
+        </footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
